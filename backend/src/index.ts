@@ -47,8 +47,8 @@ app.use(cors({
   credentials: true
 }));
 
-// Handle preflight requests for all routes
-app.options('*', cors());
+// Handle preflight requests for all routes (Express 5 syntax)
+app.options('(.*)', cors());
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
 

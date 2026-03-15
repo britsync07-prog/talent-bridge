@@ -26,10 +26,28 @@ const PORT = process.env.PORT || 5000;
 app.use((0, helmet_1.default)({
     crossOriginResourcePolicy: false,
 }));
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://leadhunter-crm.work.gd',
+    'https://talent-bridge0.netlify.app'
+].filter(Boolean);
 app.use((0, cors_1.default)({
-    origin: [process.env.FRONTEND_URL || 'http://localhost:3000', 'http://127.0.0.1:3000', 'https://leadhunter-crm.work.gd'],
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
     credentials: true
 }));
+// Handle preflight requests for all routes (Express 5 syntax)
+app.options('(.*)', (0, cors_1.default)());
 app.use(express_1.default.json({ limit: '100mb' }));
 app.use(express_1.default.urlencoded({ limit: '100mb', extended: true }));
 // Serve Static Files
@@ -50,8 +68,12 @@ app.use('/api/payments', payment_routes_1.default);
 app.use('/api/tasks', task_routes_1.default);
 app.use('/api/contracts', contract_routes_1.default);
 app.get('/', (req, res) => {
+    console.log('Health check request received from Render');
     res.send('Remote AI Workforce Platform API');
 });
-server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+const startServer = () => {
+    server.listen(Number(PORT), '0.0.0.0', () => {
+        console.log(`Server is running on port ${PORT} (0.0.0.0)`);
+    });
+};
+startServer();
