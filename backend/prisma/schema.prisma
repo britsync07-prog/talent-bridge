@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   @default("EMPLOYER") // ADMIN, EMPLOYER, ENGINEER
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  adminProfile    AdminProfile?
+  employerProfile EmployerProfile?
+  engineerProfile EngineerProfile?
+  
+  activity_logs    Activity_log[]
+}
+
+model AdminProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmployerProfile {
+  id           String @id @default(uuid())
+  userId       String @unique
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName  String?
+  website      String?
+  size         String?
+  industry     String?
+  description  String?
+  location     String?
+  isApproved   Boolean @default(false)
+
+  jobs         Job[]
+  contracts    Contract[]
+  interests    Interest[]
+}
+
+model EngineerProfile {
+  id                        String   @id @default(uuid())
+  userId                    String   @unique
+  user                      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName                  String?
+  profilePic                String?
+  country                   String?
+  skills                    String?   
+  yearsExperience           Int?     @default(0)
+  hourlyRate                Float?   @default(0)
+  monthlySalaryExpectation Float?   @default(0)
+  portfolioWebsite          String?
+  github                    String?
+  linkedin                  String?
+  videoUrl                  String?
+  aiSpecializations         String?   
+  languages                 String?   
+  availabilityStatus        String   @default("Available")
+  resumeUrl                 String?
+  certifications            String?  
+  isActive                  Boolean  @default(true)
+  isApproved                Boolean  @default(false)
+  approvalStatus            String   @default("PENDING") // PENDING, ACCEPTED_FOR_INTERVIEW, INTERVIEW_COMPLETED, FULLY_APPROVED, REJECTED
+  isFeatured                Boolean  @default(false) // For curated "top talent" placement
+
+  contracts                 Contract[]
+  interests                 Interest[]
+}
+
+model Job {
+  id          String    @id @default(uuid())
+  employerId  String
+  employer    EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  requiredSkills String
+  maxBudget   Float
+  duration    String
+  status      String    @default("OPEN") // OPEN, CLOSED
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  interests   Interest[]
+}
+
+model Interest {
+  id          String    @id @default(uuid())
+  jobId       String
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  employerId  String
+  employer    EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  engineerId  String
+  engineer    EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
+  type        String    @default("LEASE") // LEASE, FULLTIME
+  status      String    @default("PENDING") // PENDING, CALLED, APPROVED, REJECTED
+  scheduledAt DateTime?
+  meetingId   String?
+  joinUrl     String?
+  createdAt   DateTime  @default(now())
+}
+
+model Contract {
+  id               String       @id @default(uuid())
+  employerId       String
+  employer         EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  engineerId       String
+  engineer         EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
+  type             String       @default("LEASE") // LEASE (Monthly), FULLTIME (6-month upfront)
+  startDate        DateTime     @default(now())
+  salary           Float        // Monthly salary or base
+  platformFee      Float        // Fee percentage or amount
+  paymentCycle     String       @default("MONTHLY")
+  status           String       @default("PENDING") // PENDING, ACTIVE, TERMINATED, COMPLETED
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  tasks            Task[]
+  invoices         Invoice[]
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  contractId  String
+  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH
+  deadline    DateTime?
+  status      String    @default("PENDING") // PENDING, IN_PROGRESS, REVIEW, COMPLETED
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Invoice {
+  id          String    @id @default(uuid())
+  contractId  String
+  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  amount      Float
+  status      String    @default("UNPAID") // UNPAID, PAID, OVERDUE
+  dueDate     DateTime
+  createdAt   DateTime  @default(now())
+  
+  payment     Payment?
+}
+
+model Payment {
+  id          String    @id @default(uuid())
+  invoiceId   String    @unique
+  invoice     Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount      Float
+  status      String    @default("COMPLETED")
+  stripeId    String?
+  createdAt   DateTime  @default(now())
+}
+
+model Activity_log {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String   // user login, job posted, engineer hired, contract signed, task updated, invoice generated, payment completed, interest shown
+  details   String?
+  createdAt DateTime @default(now())
+}
