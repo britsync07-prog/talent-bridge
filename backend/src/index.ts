@@ -4,6 +4,7 @@ import http from 'http';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
+import cors, { CorsOptions } from 'cors';
 
 import authRoutes from './routes/auth.routes';
 import engineerRoutes from './routes/engineer.routes';
@@ -25,31 +26,35 @@ app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map((s) => s.trim()) : []),
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'https://leadhunter-crm.work.gd',
-  'https://talent-bridge0.netlify.app'
+  'https://talent-bridge0.netlify.app',
 ].filter(Boolean) as string[];
 
-// 1. Manual CORS Middleware (Top Priority)
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (process.env.NODE_ENV !== 'production') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
-  
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-  next();
-});
+// CORS: never throw on disallowed origins (that can become a 500 behind proxies).
+// Instead, omit CORS headers so the browser blocks the request cleanly.
+const corsOptions: CorsOptions = {
+  origin: (origin, cb) => {
+    // Allow server-to-server / curl (no Origin header).
+    if (!origin) return cb(null, true);
+
+    // In non-production, allow all origins for easier local dev.
+    if (process.env.NODE_ENV !== 'production') return cb(null, true);
+
+    return cb(null, allowedOrigins.includes(origin));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+  optionsSuccessStatus: 204,
+  maxAge: 86400,
+};
+
+// 1. CORS Middleware (Top Priority)
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // 2. Security Middleware (with relaxed CSP)
 app.use(helmet({
