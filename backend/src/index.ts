@@ -54,7 +54,6 @@ const corsOptions: CorsOptions = {
 
 // 1. CORS Middleware (Top Priority)
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 
 // 2. Security Middleware (with relaxed CSP)
 app.use(helmet({
