@@ -54,9 +54,14 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/contracts', contractRoutes);
 
 app.get('/', (req, res) => {
+  console.log('Health check request received from Render');
   res.send('Remote AI Workforce Platform API');
 });
 
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+const startServer = () => {
+  server.listen(Number(PORT), '0.0.0.0', () => {
+    console.log(`Server is running on port ${PORT} (0.0.0.0)`);
+  });
+};
+
+startServer();
