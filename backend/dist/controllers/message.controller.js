@@ -1,32 +1,33 @@
-import { Request, Response } from 'express';
-import prisma from '../lib/prisma';
-import { AuthRequest } from '../middleware/auth.middleware';
-
-export const sendMessage = async (req: AuthRequest, res: Response) => {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getChatPartners = exports.getMessages = exports.sendMessage = void 0;
+const prisma_1 = __importDefault(require("../lib/prisma"));
+const sendMessage = async (req, res) => {
     try {
         const { receiverId, content, fileUrl } = req.body;
         const senderId = req.user.id;
-
-        const message = await prisma.message.create({
+        const message = await prisma_1.default.message.create({
             data: {
                 senderId,
                 receiverId,
                 content
             }
         });
-
         res.status(201).json(message);
-    } catch (error: any) {
+    }
+    catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
-export const getMessages = async (req: AuthRequest, res: Response) => {
+exports.sendMessage = sendMessage;
+const getMessages = async (req, res) => {
     try {
-        const receiverId = req.params.receiverId as string;
-        const senderId = req.user.id as string;
-
-        const messages = await prisma.message.findMany({
+        const receiverId = req.params.receiverId;
+        const senderId = req.user.id;
+        const messages = await prisma_1.default.message.findMany({
             where: {
                 OR: [
                     { senderId, receiverId },
@@ -35,34 +36,30 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
             },
             orderBy: { createdAt: 'asc' }
         });
-
         res.json(messages);
-    } catch (error: any) {
+    }
+    catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
-export const getChatPartners = async (req: AuthRequest, res: Response) => {
+exports.getMessages = getMessages;
+const getChatPartners = async (req, res) => {
     try {
         const userId = req.user.id;
-        
         // Find all unique users this user has messaged or been messaged by
-        const sentTo = await prisma.message.findMany({
+        const sentTo = await prisma_1.default.message.findMany({
             where: { senderId: userId },
             select: { receiverId: true }
         });
-
-        const receivedFrom = await prisma.message.findMany({
+        const receivedFrom = await prisma_1.default.message.findMany({
             where: { receiverId: userId },
             select: { senderId: true }
         });
-
         const partnerIds = Array.from(new Set([
-            ...sentTo.map((m: any) => m.receiverId),
-            ...receivedFrom.map((m: any) => m.senderId)
+            ...sentTo.map((m) => m.receiverId),
+            ...receivedFrom.map((m) => m.senderId)
         ]));
-
-        const partners = await prisma.user.findMany({
+        const partners = await prisma_1.default.user.findMany({
             where: { id: { in: partnerIds } },
             select: {
                 id: true,
@@ -73,9 +70,10 @@ export const getChatPartners = async (req: AuthRequest, res: Response) => {
                 engineerProfile: true
             }
         });
-
         res.json(partners);
-    } catch (error: any) {
+    }
+    catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+exports.getChatPartners = getChatPartners;

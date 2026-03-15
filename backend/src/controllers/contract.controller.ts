@@ -108,7 +108,7 @@ export const declineContract = async (req: AuthRequest, res: Response) => {
     }
 
     const contract = await prisma.contract.findUnique({
-      where: { id }
+      where: { id: id as string }
     });
 
     if (!contract || contract.engineerId !== engineer.id) {
@@ -121,7 +121,7 @@ export const declineContract = async (req: AuthRequest, res: Response) => {
 
     // We can either delete it or mark it as terminated
     const updatedContract = await prisma.contract.update({
-      where: { id },
+      where: { id: id as string },
       data: { status: 'TERMINATED' }
     });
 

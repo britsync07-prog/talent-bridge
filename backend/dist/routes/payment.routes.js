@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const payment_controller_1 = require("../controllers/payment.controller");
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const router = (0, express_1.Router)();
+router.post('/generate-invoice', auth_middleware_1.protect, auth_middleware_1.employer, payment_controller_1.generateInvoice);
+router.post('/create-checkout-session/:invoiceId', auth_middleware_1.protect, auth_middleware_1.employer, payment_controller_1.createCheckoutSession);
+router.get('/invoices', auth_middleware_1.protect, payment_controller_1.getMyInvoices);
+router.post('/webhook', payment_controller_1.handleWebhook);
+exports.default = router;

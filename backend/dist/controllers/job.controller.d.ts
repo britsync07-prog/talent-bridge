@@ -1,0 +1,11 @@
+import { Request, Response } from 'express';
+import { AuthRequest } from '../middleware/auth.middleware';
+export declare const createJob: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const showInterest: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const withdrawInterest: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const deleteJob: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const scheduleCall: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getAllJobs: (req: Request, res: Response) => Promise<void>;
+export declare const getMyJobs: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getJobById: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const hireEngineer: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;

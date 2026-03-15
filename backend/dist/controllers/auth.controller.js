@@ -1,0 +1,197 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getMe = exports.login = exports.registerEngineer = exports.registerEmployer = void 0;
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const prisma_1 = __importDefault(require("../lib/prisma"));
+const generateToken = (id) => {
+    return jsonwebtoken_1.default.sign({ id }, process.env.JWT_SECRET || 'secret', {
+        expiresIn: '30d',
+    });
+};
+const registerEmployer = async (req, res) => {
+    try {
+        const { email, password, companyName, website, size, industry, description, location } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Please provide both email and password' });
+        }
+        const userExists = await prisma_1.default.user.findUnique({ where: { email } });
+        if (userExists) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+        const hashedPassword = await bcryptjs_1.default.hash(password, 10);
+        const user = await prisma_1.default.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+                role: 'EMPLOYER',
+                employerProfile: {
+                    create: {
+                        companyName,
+                        website,
+                        size,
+                        industry,
+                        description,
+                        location,
+                    }
+                },
+                activity_logs: {
+                    create: {
+                        action: 'registration',
+                        details: 'Employer account registered'
+                    }
+                }
+            },
+            include: {
+                employerProfile: true
+            }
+        });
+        res.status(201).json({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            token: generateToken(user.id),
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.registerEmployer = registerEmployer;
+const registerEngineer = async (req, res) => {
+    try {
+        const { email, password, fullName, country, skills, yearsExperience, hourlyRate, monthlySalaryExpectation, aiSpecializations, languages, portfolioWebsite, github, linkedin, resumeUrl, certifications } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Please provide both email and password' });
+        }
+        const userExists = await prisma_1.default.user.findUnique({ where: { email } });
+        if (userExists) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+        const hashedPassword = await bcryptjs_1.default.hash(password, 10);
+        const hRate = parseFloat(hourlyRate) || 0;
+        const mSalary = parseFloat(monthlySalaryExpectation) || (hRate * 160); // Default to 160 hours/month
+        const user = await prisma_1.default.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+                role: 'ENGINEER',
+                engineerProfile: {
+                    create: {
+                        fullName,
+                        country,
+                        skills,
+                        yearsExperience: parseInt(yearsExperience) || 0,
+                        hourlyRate: hRate,
+                        monthlySalaryExpectation: mSalary,
+                        aiSpecializations,
+                        languages: languages || '',
+                        portfolioWebsite,
+                        github,
+                        linkedin,
+                        resumeUrl,
+                        certifications,
+                        isApproved: false, // Must be approved by admin
+                    }
+                },
+                activity_logs: {
+                    create: {
+                        action: 'registration',
+                        details: 'Engineer account registered'
+                    }
+                }
+            },
+            include: {
+                engineerProfile: true
+            }
+        });
+        res.status(201).json({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            token: generateToken(user.id),
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.registerEngineer = registerEngineer;
+const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Please provide both email and password' });
+        }
+        console.log(`Login attempt for: ${email}`);
+        const user = await prisma_1.default.user.findUnique({
+            where: { email },
+            include: {
+                adminProfile: true,
+                employerProfile: true,
+                engineerProfile: true
+            }
+        });
+        if (!user) {
+            console.log('User not found in database');
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+        const isMatch = await bcryptjs_1.default.compare(password, user.password);
+        console.log(`Password match: ${isMatch}`);
+        if (isMatch) {
+            // Create activity log
+            await prisma_1.default.activity_log.create({
+                data: {
+                    userId: user.id,
+                    action: 'user login',
+                    details: `User logged in with role: ${user.role}`
+                }
+            });
+            res.json({
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                profile: user.adminProfile || user.employerProfile || user.engineerProfile,
+                token: generateToken(user.id),
+            });
+        }
+        else {
+            res.status(401).json({ message: 'Invalid email or password' });
+        }
+    }
+    catch (error) {
+        console.error('Login Error:', error.message);
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.login = login;
+const getMe = async (req, res) => {
+    try {
+        const user = await prisma_1.default.user.findUnique({
+            where: { id: req.user.id },
+            include: {
+                adminProfile: true,
+                employerProfile: true,
+                engineerProfile: true
+            }
+        });
+        if (user) {
+            res.json({
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                profile: user.adminProfile || user.employerProfile || user.engineerProfile,
+            });
+        }
+        else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.getMe = getMe;

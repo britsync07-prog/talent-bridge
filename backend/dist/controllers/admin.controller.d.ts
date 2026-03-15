@@ -1,0 +1,14 @@
+import { Request, Response } from 'express';
+export declare const createInterestMeeting: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getAllEngineers: (req: Request, res: Response) => Promise<void>;
+export declare const approveEngineer: (req: Request, res: Response) => Promise<void>;
+export declare const updateEngineerApprovalStatus: (req: Request, res: Response) => Promise<void>;
+export declare const toggleEngineerFeature: (req: Request, res: Response) => Promise<void>;
+export declare const getAllEmployers: (req: Request, res: Response) => Promise<void>;
+export declare const approveEmployer: (req: Request, res: Response) => Promise<void>;
+export declare const getStats: (req: Request, res: Response) => Promise<void>;
+export declare const getActivityLogs: (req: Request, res: Response) => Promise<void>;
+export declare const getAllContracts: (req: Request, res: Response) => Promise<void>;
+export declare const getAllInterests: (req: Request, res: Response) => Promise<void>;
+export declare const updateInterestStatus: (req: Request, res: Response) => Promise<void>;
+export declare const deleteInterest: (req: Request, res: Response) => Promise<void>;

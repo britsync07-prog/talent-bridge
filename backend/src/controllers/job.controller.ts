@@ -102,7 +102,7 @@ export const withdrawInterest = async (req: AuthRequest, res: Response) => {
     }
 
     const interest = await prisma.interest.findUnique({
-      where: { id }
+      where: { id: id as string }
     });
 
     if (!interest || interest.employerId !== employer.id) {
@@ -110,7 +110,7 @@ export const withdrawInterest = async (req: AuthRequest, res: Response) => {
     }
 
     await prisma.interest.delete({
-      where: { id }
+      where: { id: id as string }
     });
 
     res.json({ message: 'Interest withdrawn successfully' });
@@ -133,7 +133,7 @@ export const deleteJob = async (req: AuthRequest, res: Response) => {
     }
 
     const job = await prisma.job.findUnique({
-      where: { id }
+      where: { id: id as string }
     });
 
     if (!job || job.employerId !== employer.id) {
@@ -141,7 +141,7 @@ export const deleteJob = async (req: AuthRequest, res: Response) => {
     }
 
     await prisma.job.delete({
-      where: { id }
+      where: { id: id as string }
     });
 
     res.json({ message: 'Job deleted successfully' });
@@ -165,7 +165,7 @@ export const scheduleCall = async (req: AuthRequest, res: Response) => {
     }
 
     const interest = await prisma.interest.findUnique({
-      where: { id }
+      where: { id: id as string }
     });
 
     if (!interest || interest.employerId !== employer.id) {
@@ -173,7 +173,7 @@ export const scheduleCall = async (req: AuthRequest, res: Response) => {
     }
 
     const updatedInterest = await prisma.interest.update({
-      where: { id },
+      where: { id: id as string },
       data: { 
         scheduledAt: new Date(scheduledAt),
         status: 'PENDING' // Ensure it's in pending if it was rejected or approved

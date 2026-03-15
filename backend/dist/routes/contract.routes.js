@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const contract_controller_1 = require("../controllers/contract.controller");
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.protect);
+router.get('/', contract_controller_1.getMyContracts);
+router.get('/:id', contract_controller_1.getContractById);
+router.patch('/:id/sign', auth_middleware_1.engineer, contract_controller_1.signContract);
+router.patch('/:id/decline', auth_middleware_1.engineer, contract_controller_1.declineContract);
+exports.default = router;
