@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import cors, { CorsOptions } from 'cors';
+import morgan from 'morgan';
 
 import authRoutes from './routes/auth.routes';
 import engineerRoutes from './routes/engineer.routes';
@@ -54,6 +55,9 @@ const corsOptions: CorsOptions = {
 
 // 1. CORS Middleware (Top Priority)
 app.use(cors(corsOptions));
+
+// Request Logging
+app.use(morgan('dev'));
 
 // 2. Security Middleware (with relaxed CSP)
 app.use(helmet({
