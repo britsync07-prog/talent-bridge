@@ -12,7 +12,8 @@ import {
     getAllInterests,
     updateInterestStatus,
     deleteInterest,
-    createInterestMeeting
+    createInterestMeeting,
+    createEngineerVerificationMeeting
 } from '../controllers/admin.controller';
 import { protect, admin } from '../middleware/auth.middleware';
 
@@ -27,6 +28,7 @@ router.get('/employers', getAllEmployers);
 router.get('/contracts', getAllContracts);
 router.get('/interests', getAllInterests);
 router.post('/interests/:id/meeting', createInterestMeeting);
+router.post('/engineers/:id/meeting', createEngineerVerificationMeeting);
 router.patch('/interests/:id/status', updateInterestStatus);
 router.delete('/interests/:id', deleteInterest);
 router.patch('/engineers/:id/approve', approveEngineer);

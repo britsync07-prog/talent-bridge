@@ -49,6 +49,48 @@ export const createInterestMeeting = async (req: Request, res: Response) => {
   }
 };
 
+export const createEngineerVerificationMeeting = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    
+    const engineer = await prisma.engineerProfile.findUnique({
+      where: { id },
+      include: { user: true }
+    });
+
+    if (!engineer) {
+      return res.status(404).json({ message: 'Engineer profile not found' });
+    }
+
+    const title = `Verification: ${engineer.fullName || 'Engineer'}`;
+    const startTime = new Date().toISOString();
+
+    const meetingData = await createLeadHunterMeeting(title, startTime);
+
+    const updatedEngineer = await prisma.engineerProfile.update({
+      where: { id },
+      data: {
+        meetingId: meetingData.meeting_id,
+        joinUrl: meetingData.join_url,
+        approvalStatus: 'ACCEPTED_FOR_INTERVIEW'
+      }
+    });
+
+    // Activity Log
+    await prisma.activity_log.create({
+      data: {
+        userId: (req as any).user.id,
+        action: 'engineer hired', // Reusing relevant action or could add 'candidate verified'
+        details: `Admin created verification meeting for ${engineer.fullName} (ID: ${meetingData.meeting_id})`
+      }
+    });
+
+    res.json(updatedEngineer);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getAllEngineers = async (req: Request, res: Response) => {
   try {
     const engineers = await prisma.engineerProfile.findMany({

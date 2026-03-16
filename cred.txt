@@ -1,1 +1,36 @@
 BZBjKdeTTipRhzsJ
+
+curl -X POST https://leadhunter-crm.work.gd:3001/api/meetings/create \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: nexus_super_secret_key" \
+  -d '{
+    "title": "External Strategic Meet",
+    "startTime": "2026-04-20T15:00:00Z",
+    "endTime": "2026-05-20T16:00:00Z"
+  }'
+leadhunter---- 79 only email .. ... only 1 scraper unlimited.. free trail gone.. demo vido from taha. get a live demo form link...
+landing page.. perfect word Global Inbound ,, the word  Inbound.
+
+pricing remove from the talent bridge
+
+
+admin will get the employers intrests.
+employer have to give busniss cirtficate.
+employer also can do meeting.
+remove job section
+video upload limit
+task - remove ai estimator
+remove the up bar from dashboard
+corporete- compny regstration number
+message asset remove.
+job post go to admin
+remove smartmatch
+candidate can see the employers info
+disputes for ticket of all 
+wait list have jara kajer jonn bose ase
+chat frature for all
+70 pounds
+workspace for empolyer
+pordcast setup
+
+

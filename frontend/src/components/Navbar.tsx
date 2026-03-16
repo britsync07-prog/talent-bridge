@@ -17,7 +17,6 @@ const Navbar = () => {
           <Link href="/solutions" className="hover:text-[#3A3F5F] transition-all">Solutions</Link>
           <Link href="/case-studies" className="hover:text-[#3A3F5F] transition-all">Cases</Link>
           <Link href="/engineers" className="hover:text-[#3A3F5F] transition-all">Talent</Link>
-          <Link href="/pricing" className="hover:text-[#3A3F5F] transition-all">Pricing</Link>
           <Link href="/resources" className="hover:text-[#3A3F5F] transition-all">Resources</Link>
           <Link href="/about" className="hover:text-[#3A3F5F] transition-all">About</Link>
           <Link href="/partners" className="hover:text-[#3A3F5F] transition-all">Partners</Link>

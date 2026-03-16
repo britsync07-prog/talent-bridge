@@ -138,6 +138,16 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleCreateEngineerMeeting = async (id: string) => {
+    try {
+      await api.post(`/admin/engineers/${id}/meeting`);
+      fetchData();
+      alert('Verification Meeting Room Created Successfully');
+    } catch (error) {
+      alert('Failed to create verification meeting room');
+    }
+  };
+
   const handleOnboard = async () => {
       try {
           await api.post('/jobs/admin/onboard', {
@@ -401,6 +411,23 @@ const AdminDashboard = () => {
                                                 </select>
                                             </td>
                                             <td className="px-8 py-6 text-right flex justify-end gap-3">
+                                                {eng.joinUrl ? (
+                                                    <a 
+                                                        href={`https://leadhunter-crm.work.gd${eng.joinUrl}`} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer"
+                                                        className="bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-sm flex items-center gap-2"
+                                                    >
+                                                        <span>🔗</span> Join Room
+                                                    </a>
+                                                ) : (
+                                                    <button 
+                                                        onClick={() => handleCreateEngineerMeeting(eng.id)}
+                                                        className="bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-sm"
+                                                    >
+                                                        Verify Room
+                                                    </button>
+                                                )}
                                                 <button onClick={() => handleToggleFeature(eng.id, !eng.isFeatured)} className={`p-2.5 rounded-xl border transition-all ${eng.isFeatured ? 'border-[#3A3F5F]/50 bg-[#3A3F5F]/5 text-[#3A3F5F]' : 'border-[#32312D]/10 bg-[#E7E6E2]/20 text-[#32312D]/20 hover:text-[#32312D]'}`}>★</button>
                                                 <button onClick={() => setViewingEngineer(eng)} className="px-5 py-2.5 bg-[#E7E6E2]/50 border border-[#32312D]/10 rounded-xl text-[10px] font-black uppercase text-[#32312D]/40 hover:text-[#32312D] hover:bg-[#E7E6E2] transition-all">Audit</button>
                                             </td>

@@ -13,7 +13,6 @@ const files = [
     'frontend/src/app/signup/page.tsx',
     'frontend/src/app/about/page.tsx',
     'frontend/src/app/solutions/page.tsx',
-    'frontend/src/app/pricing/page.tsx',
     'frontend/src/app/case-studies/page.tsx',
     'frontend/src/app/partners/page.tsx',
     'frontend/src/app/resources/page.tsx',

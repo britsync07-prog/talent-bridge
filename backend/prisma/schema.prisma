@@ -84,6 +84,8 @@ model EngineerProfile {
   isApproved                Boolean  @default(false)
   approvalStatus            String   @default("PENDING") // PENDING, ACCEPTED_FOR_INTERVIEW, INTERVIEW_COMPLETED, FULLY_APPROVED, REJECTED
   isFeatured                Boolean  @default(false) // For curated "top talent" placement
+  meetingId                 String?
+  joinUrl                   String?
 
   contracts                 Contract[]
   interests                 Interest[]

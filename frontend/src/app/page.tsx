@@ -210,7 +210,6 @@ const LandingPage = () => {
                     <ul className="space-y-6 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
                         <li><Link href="/engineers" className="hover:text-[#3A3F5F] transition-all">The Roster</Link></li>
                         <li><Link href="/solutions" className="hover:text-[#3A3F5F] transition-all">Protocols</Link></li>
-                        <li><Link href="/pricing" className="hover:text-[#3A3F5F] transition-all">Tier Entry</Link></li>
                         <li><Link href="/partners" className="hover:text-[#3A3F5F] transition-all">Alliances</Link></li>
                     </ul>
                 </div>
