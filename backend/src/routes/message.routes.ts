@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { sendMessage, getMessages, getChatPartners } from '../controllers/message.controller';
 import { protect } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: Router = Router();
 
 router.use(protect);
 

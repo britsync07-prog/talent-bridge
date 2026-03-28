@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { registerEmployer, registerEngineer, login, getMe } from '../controllers/auth.controller';
 import { protect } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: Router = Router();
 
 router.post('/register/employer', registerEmployer);
 router.post('/register/engineer', registerEngineer);

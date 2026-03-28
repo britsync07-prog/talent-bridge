@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { getMyContracts, getContractById, signContract, declineContract } from '../controllers/contract.controller';
 import { protect, engineer } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: Router = Router();
 
 router.use(protect);
 

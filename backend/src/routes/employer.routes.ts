@@ -2,7 +2,7 @@ import { Router } from 'express';
 import prisma from '../lib/prisma';
 import { protect, employer } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: Router = Router();
 
 router.get('/profile', protect, employer, async (req: any, res) => {
     try {

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 export declare const createInterestMeeting: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const createEngineerVerificationMeeting: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export declare const getAllEngineers: (req: Request, res: Response) => Promise<void>;
 export declare const approveEngineer: (req: Request, res: Response) => Promise<void>;
 export declare const updateEngineerApprovalStatus: (req: Request, res: Response) => Promise<void>;

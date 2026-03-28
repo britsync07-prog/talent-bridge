@@ -3,7 +3,7 @@ import { getEngineers, getEngineerById, matchEngineers, getProfile, updateProfil
 import { protect, engineer } from '../middleware/auth.middleware';
 import { upload } from '../utils/multer';
 
-const router = Router();
+const router: Router = Router();
 
 router.get('/profile', protect, engineer, getProfile);
 router.patch('/profile', protect, engineer, upload.fields([

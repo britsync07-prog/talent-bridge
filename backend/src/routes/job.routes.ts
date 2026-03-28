@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { createJob, getAllJobs, getMyJobs, getJobById, hireEngineer, showInterest, withdrawInterest, deleteJob, scheduleCall } from '../controllers/job.controller';
 import { protect, employer, admin } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: Router = Router();
 
 router.get('/', getAllJobs);
 router.get('/my-jobs', protect, employer, getMyJobs);

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteInterest = exports.updateInterestStatus = exports.getAllInterests = exports.getAllContracts = exports.getActivityLogs = exports.getStats = exports.approveEmployer = exports.getAllEmployers = exports.toggleEngineerFeature = exports.updateEngineerApprovalStatus = exports.approveEngineer = exports.getAllEngineers = exports.createInterestMeeting = void 0;
+exports.deleteInterest = exports.updateInterestStatus = exports.getAllInterests = exports.getAllContracts = exports.getActivityLogs = exports.getStats = exports.approveEmployer = exports.getAllEmployers = exports.toggleEngineerFeature = exports.updateEngineerApprovalStatus = exports.approveEngineer = exports.getAllEngineers = exports.createEngineerVerificationMeeting = exports.createInterestMeeting = void 0;
 const prisma_1 = __importDefault(require("../lib/prisma"));
 const meeting_1 = require("../utils/meeting");
 const createInterestMeeting = async (req, res) => {
@@ -46,6 +46,42 @@ const createInterestMeeting = async (req, res) => {
     }
 };
 exports.createInterestMeeting = createInterestMeeting;
+const createEngineerVerificationMeeting = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const engineer = await prisma_1.default.engineerProfile.findUnique({
+            where: { id },
+            include: { user: true }
+        });
+        if (!engineer) {
+            return res.status(404).json({ message: 'Engineer profile not found' });
+        }
+        const title = `Verification: ${engineer.fullName || 'Engineer'}`;
+        const startTime = new Date().toISOString();
+        const meetingData = await (0, meeting_1.createLeadHunterMeeting)(title, startTime);
+        const updatedEngineer = await prisma_1.default.engineerProfile.update({
+            where: { id },
+            data: {
+                meetingId: meetingData.meeting_id,
+                joinUrl: meetingData.join_url,
+                approvalStatus: 'ACCEPTED_FOR_INTERVIEW'
+            }
+        });
+        // Activity Log
+        await prisma_1.default.activity_log.create({
+            data: {
+                userId: req.user.id,
+                action: 'engineer hired', // Reusing relevant action or could add 'candidate verified'
+                details: `Admin created verification meeting for ${engineer.fullName} (ID: ${meetingData.meeting_id})`
+            }
+        });
+        res.json(updatedEngineer);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.createEngineerVerificationMeeting = createEngineerVerificationMeeting;
 const getAllEngineers = async (req, res) => {
     try {
         const engineers = await prisma_1.default.engineerProfile.findMany({

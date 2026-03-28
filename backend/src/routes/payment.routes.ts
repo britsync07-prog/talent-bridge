@@ -7,7 +7,7 @@ import {
 } from '../controllers/payment.controller';
 import { protect, employer } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: Router = Router();
 
 router.post('/generate-invoice', protect, employer, generateInvoice);
 router.post('/create-checkout-session/:invoiceId', protect, employer, createCheckoutSession);

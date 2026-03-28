@@ -17,7 +17,7 @@ import {
 } from '../controllers/admin.controller';
 import { protect, admin } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: Router = Router();
 
 router.use(protect, admin);
 

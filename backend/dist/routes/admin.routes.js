@@ -12,6 +12,7 @@ router.get('/employers', admin_controller_1.getAllEmployers);
 router.get('/contracts', admin_controller_1.getAllContracts);
 router.get('/interests', admin_controller_1.getAllInterests);
 router.post('/interests/:id/meeting', admin_controller_1.createInterestMeeting);
+router.post('/engineers/:id/meeting', admin_controller_1.createEngineerVerificationMeeting);
 router.patch('/interests/:id/status', admin_controller_1.updateInterestStatus);
 router.delete('/interests/:id', admin_controller_1.deleteInterest);
 router.patch('/engineers/:id/approve', admin_controller_1.approveEngineer);

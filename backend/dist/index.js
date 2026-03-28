@@ -10,6 +10,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const path_1 = __importDefault(require("path"));
 const cors_1 = __importDefault(require("cors"));
+const morgan_1 = __importDefault(require("morgan"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const engineer_routes_1 = __importDefault(require("./routes/engineer.routes"));
 const employer_routes_1 = __importDefault(require("./routes/employer.routes"));
@@ -28,8 +29,12 @@ const allowedOrigins = [
     ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map((s) => s.trim()) : []),
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'https://leadhunter-crm.work.gd',
+    'https://meet.truecrm.online',
     'https://talent-bridge0.netlify.app',
+    'https://talentbridge.it.com',
+    'http://talentbridge.it.com',
+    'https://www.talentbridge.it.com',
+    'http://www.talentbridge.it.com',
 ].filter(Boolean);
 // CORS: never throw on disallowed origins (that can become a 500 behind proxies).
 // Instead, omit CORS headers so the browser blocks the request cleanly.
@@ -51,7 +56,8 @@ const corsOptions = {
 };
 // 1. CORS Middleware (Top Priority)
 app.use((0, cors_1.default)(corsOptions));
-app.options('*', (0, cors_1.default)(corsOptions));
+// Request Logging
+app.use((0, morgan_1.default)('dev'));
 // 2. Security Middleware (with relaxed CSP)
 app.use((0, helmet_1.default)({
     crossOriginResourcePolicy: false,
