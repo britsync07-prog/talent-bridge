@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import path from 'path';
 import cors, { CorsOptions } from 'cors';
 import morgan from 'morgan';
+import prisma from './lib/prisma';
 
 import authRoutes from './routes/auth.routes';
 import engineerRoutes from './routes/engineer.routes';
@@ -38,16 +39,10 @@ const allowedOrigins = [
   'http://www.talentbridge.it.com',
 ].filter(Boolean) as string[];
 
-// CORS: never throw on disallowed origins (that can become a 500 behind proxies).
-// Instead, omit CORS headers so the browser blocks the request cleanly.
 const corsOptions: CorsOptions = {
   origin: (origin, cb) => {
-    // Allow server-to-server / curl (no Origin header).
     if (!origin) return cb(null, true);
-
-    // In non-production, allow all origins for easier local dev.
     if (process.env.NODE_ENV !== 'production') return cb(null, true);
-
     return cb(null, allowedOrigins.includes(origin));
   },
   credentials: true,
@@ -57,26 +52,20 @@ const corsOptions: CorsOptions = {
   maxAge: 86400,
 };
 
-// 1. CORS Middleware (Top Priority)
 app.use(cors(corsOptions));
-
-// Request Logging
 app.use(morgan('dev'));
-
-// 2. Security Middleware (with relaxed CSP)
 app.use(helmet({
   crossOriginResourcePolicy: false,
-  contentSecurityPolicy: false, // Disable for now to rule out interference
+  contentSecurityPolicy: false,
 }));
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
-// Serve Static Files
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Increased limit for development/active use
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
   message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api/', limiter);
@@ -92,14 +81,25 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/contracts', contractRoutes);
 
 app.get('/', (req, res) => {
-  console.log('Health check request received from Render');
   res.send('Remote AI Workforce Platform API');
 });
 
-const startServer = () => {
-  server.listen(Number(PORT), '0.0.0.0', () => {
-    console.log(`Server is running on port ${PORT} (0.0.0.0)`);
-  });
+const startServer = async () => {
+  try {
+    console.log('--- Startup Phase ---');
+    console.log(`Port: ${PORT}`);
+    
+    console.log('Verifying Database Connection...');
+    await prisma.$connect();
+    console.log('Database Connection: OK');
+
+    server.listen(Number(PORT), '0.0.0.0', () => {
+      console.log(`Server successfully bound to 0.0.0.0:${PORT}`);
+    });
+  } catch (error) {
+    console.error('FAILED TO START SERVER:', error);
+    process.exit(1);
+  }
 };
 
 startServer();
