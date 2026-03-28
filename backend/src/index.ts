@@ -30,8 +30,12 @@ const allowedOrigins = [
   ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map((s) => s.trim()) : []),
   'http://localhost:3000',
   'http://127.0.0.1:3000',
-  'https://leadhunter-crm.work.gd',
+  'https://meet.truecrm.online',
   'https://talent-bridge0.netlify.app',
+  'https://talentbridge.it.com',
+  'http://talentbridge.it.com',
+  'https://www.talentbridge.it.com',
+  'http://www.talentbridge.it.com',
 ].filter(Boolean) as string[];
 
 // CORS: never throw on disallowed origins (that can become a 500 behind proxies).

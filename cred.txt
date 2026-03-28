@@ -8,10 +8,12 @@ curl -X POST https://leadhunter-crm.work.gd:3001/api/meetings/create \
     "startTime": "2026-04-20T15:00:00Z",
     "endTime": "2026-05-20T16:00:00Z"
   }'
-leadhunter---- 79 only email .. ... only 1 scraper unlimited.. free trail gone.. demo vido from taha. get a live demo form link...
-landing page.. perfect word Global Inbound ,, the word  Inbound.
+leadhunter----  demo vido from taha. get a live demo form link...
 
-pricing remove from the talent bridge
+
+2025 britsync global services ltd london uk
+
+
 
 
 admin will get the employers intrests.
