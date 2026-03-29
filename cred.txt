@@ -1,4 +1,4 @@
-BZBjKdeTTipRhzsJ
+
 
 curl -X POST https://leadhunter-crm.work.gd:3001/api/meetings/create \
   -H "Content-Type: application/json" \
