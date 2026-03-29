@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import http from 'http';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import path from 'path';
 import cors, { CorsOptions } from 'cors';
 import morgan from 'morgan';
 import prisma from './lib/prisma';
@@ -61,7 +60,6 @@ app.use(helmet({
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,

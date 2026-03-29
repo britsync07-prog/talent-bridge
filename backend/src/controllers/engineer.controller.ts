@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { uploadToR2 } from '../utils/r2';
 
 export const getProfile = async (req: AuthRequest, res: Response) => {
   try {
@@ -49,18 +50,16 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     };
 
     if (files?.resume) {
-      updateData.resumeUrl = `/uploads/${files.resume[0].filename}`;
+      updateData.resumeUrl = await uploadToR2(files.resume[0], 'engineers/resumes');
     }
     if (files?.video) {
-      updateData.videoUrl = `/uploads/${files.video[0].filename}`;
+      updateData.videoUrl = await uploadToR2(files.video[0], 'engineers/videos');
     }
     if (files?.certifications) {
-      // Assuming certifications is a comma-separated string or similar in DB
-      // For now let's just save the latest uploaded file or handle multiple
-      updateData.certifications = `/uploads/${files.certifications[0].filename}`;
+      updateData.certifications = await uploadToR2(files.certifications[0], 'engineers/certifications');
     }
     if (files?.profilePic) {
-      updateData.profilePic = `/uploads/${files.profilePic[0].filename}`;
+      updateData.profilePic = await uploadToR2(files.profilePic[0], 'engineers/profile-pics');
     }
 
     const updatedProfile = await prisma.engineerProfile.update({
@@ -73,6 +72,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 export const matchEngineers = async (req: Request, res: Response) => {
   try {
