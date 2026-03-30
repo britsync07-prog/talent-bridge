@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
-import api from '@/lib/api';
+import api, { getFileUrl } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -86,7 +86,7 @@ export default function EngineerProfilePage() {
                   <div className="w-40 h-40 rounded-[40px] bg-white flex items-center justify-center text-7xl font-black text-[#3A3F5F] border-2 border-[#32312D]/10 shadow-2xl overflow-hidden">
                     {engineer.profilePic ? (
                       <img 
-                        src={`http://localhost:5000${engineer.profilePic}`} 
+                        src={getFileUrl(engineer.profilePic)} 
                         alt={engineer.fullName} 
                         className="w-full h-full object-cover"
                       />
@@ -126,7 +126,7 @@ export default function EngineerProfilePage() {
                 </div>
                 <div className="bg-white rounded-[50px] overflow-hidden border border-[#32312D]/10 shadow-2xl aspect-video relative group">
                   <video 
-                    src={`http://localhost:5000${engineer.videoUrl}`} 
+                    src={getFileUrl(engineer.videoUrl)} 
                     controls 
                     className="w-full h-full object-cover"
                   />
@@ -181,7 +181,7 @@ export default function EngineerProfilePage() {
                                 <div className="text-4xl mb-4">🏆</div>
                                 <div className="text-[#32312D] font-black uppercase text-xs tracking-widest mb-4">Standard Certification Node</div>
                                 <Link 
-                                    href={`http://localhost:5000${engineer.certifications}`} 
+                                    href={getFileUrl(engineer.certifications)} 
                                     target="_blank"
                                     className="inline-block text-[#3A3F5F] text-[10px] font-black uppercase tracking-widest border-b border-[#3A3F5F] pb-1 hover:text-[#3A3F5F]/80 hover:border-[#3A3F5F]/80 transition-all"
                                 >
@@ -243,7 +243,7 @@ export default function EngineerProfilePage() {
                 <div className="mt-12 pt-12 border-t border-[#32312D]/10 space-y-6">
                     {engineer.resumeUrl && (
                         <Link 
-                            href={`http://localhost:5000${engineer.resumeUrl}`} 
+                            href={getFileUrl(engineer.resumeUrl)} 
                             target="_blank"
                             className="flex items-center justify-between p-6 bg-[#E7E6E2] border border-[#32312D]/10 rounded-[24px] hover:border-[#3A3F5F] transition-all group"
                         >

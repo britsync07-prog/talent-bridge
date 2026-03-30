@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import api from '@/lib/api';
+import api, { getFileUrl } from '@/lib/api';
 
 const FileUploadZone = ({ id, label, accept, icon, onFileSelect, currentFile }: any) => {
   const [dragActive, setDragActive] = useState(false);
@@ -67,7 +67,7 @@ const FileUploadZone = ({ id, label, accept, icon, onFileSelect, currentFile }: 
           </p>
           {currentFile && !fileName && (
             <Link 
-              href={`http://localhost:5000${currentFile}`} 
+              href={getFileUrl(currentFile)} 
               target="_blank" 
               className="mt-4 text-[10px] text-[#3A3F5F] font-black uppercase tracking-widest hover:underline"
               onClick={(e) => e.stopPropagation()}
@@ -256,7 +256,7 @@ const EngineerDashboard = () => {
                                 <div className="w-16 h-16 rounded-2xl bg-[#3A3F5F]/5 flex items-center justify-center text-2xl border border-[#3A3F5F]/10 overflow-hidden text-[#3A3F5F]">
                                     {(picPreview || profile.profilePic) ? (
                                       <img 
-                                        src={picPreview || `http://localhost:5000${profile.profilePic}`} 
+                                        src={picPreview || getFileUrl(profile.profilePic)} 
                                         alt="Profile" 
                                         className="w-full h-full object-cover grayscale"
                                       />
@@ -446,7 +446,7 @@ const EngineerDashboard = () => {
                                                 <div className="w-32 h-32 rounded-3xl bg-[#E7E6E2] border border-[#32312D]/10 flex items-center justify-center text-4xl overflow-hidden text-[#32312D]/40 shadow-inner">
                                                     {(picPreview || profile.profilePic) ? (
                                                       <img 
-                                                        src={picPreview || `http://localhost:5000${profile.profilePic}`} 
+                                                        src={picPreview || getFileUrl(profile.profilePic)} 
                                                         alt="Profile Preview" 
                                                         className="w-full h-full object-cover grayscale"
                                                       />

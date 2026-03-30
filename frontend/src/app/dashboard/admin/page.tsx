@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/api';
+import api, { getFileUrl } from '@/lib/api';
 
 const AdminDashboard = () => {
   const { user, loading } = useAuth();
@@ -547,7 +547,7 @@ const AdminDashboard = () => {
               <div className="bg-white w-full max-w-5xl rounded-[50px] shadow-2xl overflow-hidden flex flex-col md:flex-row h-[85vh] border border-[#32312D]/10">
                   <div className="flex-1 bg-[#E7E6E2]/50 flex items-center justify-center relative">
                       {viewingEngineer.videoUrl ? (
-                          <video src={`http://localhost:5000${viewingEngineer.videoUrl}`} controls className="w-full h-full object-contain grayscale" />
+                          <video src={getFileUrl(viewingEngineer.videoUrl)} controls className="w-full h-full object-contain grayscale" />
                       ) : (
                           <div className="text-[#32312D]/20 font-black uppercase tracking-[0.5em] text-sm">Uplink Feed Offline</div>
                       )}
@@ -588,7 +588,7 @@ const AdminDashboard = () => {
                           <div className="space-y-4">
                               <div className="text-[10px] font-black text-[#32312D]/40 uppercase mb-5 tracking-[0.3em]">Encrypted Documentation</div>
                               {viewingEngineer.resumeUrl && (
-                                  <a href={`http://localhost:5000${viewingEngineer.resumeUrl}`} target="_blank" className="flex items-center justify-between p-5 bg-white rounded-2xl border border-[#32312D]/10 hover:border-[#3A3F5F] shadow-sm transition-all group">
+                                  <a href={getFileUrl(viewingEngineer.resumeUrl)} target="_blank" className="flex items-center justify-between p-5 bg-white rounded-2xl border border-[#32312D]/10 hover:border-[#3A3F5F] shadow-sm transition-all group">
                                       <span className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest group-hover:text-[#32312D] transition-colors">Dossier_Link.pdf</span>
                                       <span className="text-[#3A3F5F]">→</span>
                                   </a>
