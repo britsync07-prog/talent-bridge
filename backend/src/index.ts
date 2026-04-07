@@ -57,6 +57,9 @@ app.use(helmet({
   crossOriginResourcePolicy: false,
   contentSecurityPolicy: false,
 }));
+// Special case for Stripe webhooks - MUST come before express.json()
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
@@ -84,6 +87,16 @@ app.get('/api/health', (req, res) => {
 
 app.get('/', (req, res) => {
   res.send('Remote AI Workforce Platform API');
+});
+
+// Final Error Handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('--- Global Exception ---');
+    console.error(err);
+    res.status(err.status || 500).json({
+        message: err.message || 'Internal Server Conflict',
+        error: process.env.NODE_ENV === 'production' ? {} : err
+    });
 });
 
 const startServer = async () => {

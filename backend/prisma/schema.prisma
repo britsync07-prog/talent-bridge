@@ -121,6 +121,8 @@ model Interest {
   meetingId   String?
   joinUrl     String?
   createdAt   DateTime  @default(now())
+
+  @@unique([jobId, engineerId])
 }
 
 model Contract {
@@ -140,6 +142,8 @@ model Contract {
 
   tasks            Task[]
   invoices         Invoice[]
+
+  @@unique([employerId, engineerId])
 }
 
 model Task {

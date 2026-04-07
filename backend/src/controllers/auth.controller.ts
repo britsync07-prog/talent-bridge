@@ -5,7 +5,10 @@ import prisma from '../lib/prisma';
 import { AuthRequest } from '../middleware/auth.middleware';
 
 const generateToken = (id: string) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'secret', {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is not defined in environment variables');
+  }
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 };
@@ -18,7 +21,8 @@ export const registerEmployer = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Please provide both email and password' });
     }
 
-    const userExists = await prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.toLowerCase();
+    const userExists = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
@@ -27,7 +31,7 @@ export const registerEmployer = async (req: Request, res: Response) => {
 
     const user = await prisma.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         role: 'EMPLOYER',
         employerProfile: {
@@ -87,7 +91,8 @@ export const registerEngineer = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Please provide both email and password' });
     }
 
-    const userExists = await prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.toLowerCase();
+    const userExists = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
@@ -99,7 +104,7 @@ export const registerEngineer = async (req: Request, res: Response) => {
 
     const user = await prisma.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         role: 'ENGINEER',
         engineerProfile: {
@@ -151,10 +156,11 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Please provide both email and password' });
     }
 
-    console.log(`Login attempt for: ${email}`);
+    const normalizedEmail = email.toLowerCase();
+    console.log(`Login attempt for: ${normalizedEmail}`);
 
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
       include: {
         adminProfile: true,
         employerProfile: true,
