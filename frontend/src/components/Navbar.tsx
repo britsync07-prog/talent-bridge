@@ -13,14 +13,6 @@ const Navbar = () => {
         <Link href="/" className="text-2xl font-black text-[#3A3F5F] tracking-tighter">
           TALENT BRIDGE
         </Link>
-        <div className="hidden lg:flex gap-10 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
-          <Link href="/solutions" className="hover:text-[#3A3F5F] transition-all">Solutions</Link>
-          <Link href="/case-studies" className="hover:text-[#3A3F5F] transition-all">Cases</Link>
-          <Link href="/engineers" className="hover:text-[#3A3F5F] transition-all">Talent</Link>
-          <Link href="/resources" className="hover:text-[#3A3F5F] transition-all">Resources</Link>
-          <Link href="/about" className="hover:text-[#3A3F5F] transition-all">About</Link>
-          <Link href="/partners" className="hover:text-[#3A3F5F] transition-all">Partners</Link>
-        </div>
       </div>
       <div className="flex items-center gap-6">
         {user ? (

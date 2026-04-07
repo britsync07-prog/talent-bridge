@@ -100,6 +100,11 @@ export const getAllEngineers = async (req: Request, res: Response) => {
             email: true,
             createdAt: true
           }
+        },
+        interests: {
+          include: {
+            employer: true
+          }
         }
       }
     });
@@ -182,6 +187,11 @@ export const getAllEmployers = async (req: Request, res: Response) => {
           select: {
             email: true,
             createdAt: true
+          }
+        },
+        interests: {
+          include: {
+            engineer: true
           }
         }
       }

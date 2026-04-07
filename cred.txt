@@ -9,11 +9,17 @@ curl -X POST https://leadhunter-crm.work.gd:3001/api/meetings/create \
     "endTime": "2026-05-20T16:00:00Z"
   }'
 
+crm form edit option..
+crm email pass.. error show
 
 
+leadhunter-- image , 3 days free trail no card requred, limit, card image, buttons, catagorized uncatagorizxed. ip-block. 100 lead  free only- smtp is not apparing, not even the saving working in dashboard.html, list of files
 
+https://i.ibb.co.com/DP9K6zxd/photo-6239932133963140892-w.jpg
+https://i.ibb.co.com/nsWvJpYT/photo-6239932133963140901-w.jpg
+https://i.ibb.co.com/W4sGrZHC/photo-6239932133963140899-w.jpg
 
-
+starteup add , investor....
 admin will get the employers intrests.
 employer have to give busniss cirtficate.
 employer also can do meeting.

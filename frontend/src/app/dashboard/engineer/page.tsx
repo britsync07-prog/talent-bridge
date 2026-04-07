@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import Navbar from '@/components/Navbar';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -232,7 +231,7 @@ const EngineerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#E7E6E2] text-[#32312D] flex flex-col font-sans selection:bg-[#3A3F5F] selection:text-white">
-      <Navbar />
+      
       
       <main className="max-w-[1600px] mx-auto w-full px-6 py-12 flex-1">
         {/* Header Section */}

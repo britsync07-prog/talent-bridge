@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Navbar from '@/components/Navbar';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -28,7 +27,6 @@ const EmployerDashboard = () => {
       { id: 'd1', title: 'Senior ML Engineer', savedAt: '2 days ago' }
     ]
   });
-  const [showEstimator, setShowEstimator] = useState(false);
   const [fetching, setFetching] = useState(true);
 
   const hasFetched = React.useRef(false);
@@ -108,7 +106,7 @@ const EmployerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#E7E6E2] text-[#32312D] flex flex-col font-sans selection:bg-[#3A3F5F] selection:text-white">
-      <Navbar />
+
       
       <main className="max-w-[1600px] mx-auto w-full px-6 py-12 flex-1">
         {/* Header Section */}
@@ -126,12 +124,6 @@ const EmployerDashboard = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-4">
-                    <button 
-                        onClick={() => setShowEstimator(true)}
-                        className="bg-white border border-[#32312D]/10 text-slate-600 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-[#3A3F5F] transition-all flex items-center gap-3 shadow-sm"
-                    >
-                        <span className="text-[#3A3F5F]">✨</span> AI Estimator
-                    </button>
                     <div className="bg-[#E7E6E2]/50 px-8 py-4 rounded-2xl border border-[#32312D]/10 min-w-[200px]">
                         <div className="text-[8px] font-black text-[#3A3F5F]/60 uppercase tracking-[0.2em] mb-1">Monthly Resource Burn</div>
                         <div className="text-2xl font-black text-[#3A3F5F]">${data.contracts.reduce((acc: number, c: any) => acc + (c.salary || 0), 0).toLocaleString()}</div>
@@ -256,7 +248,6 @@ const EmployerDashboard = () => {
                                                 </div>
                                             </div>
                                             <div className="flex gap-3 shrink-0">
-                                                <Link href={`/dashboard/employer/jobs/${job.id}/match`} className="bg-[#32312D] text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#3A3F5F] transition-all">Smart Match</Link>
                                                 <button 
                                                     onClick={() => handleToggleJobStatus(job.id, job.status)}
                                                     className="bg-white border border-slate-200 text-slate-400 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:text-[#32312D] hover:border-[#32312D] transition-all"
@@ -312,9 +303,24 @@ const EmployerDashboard = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-6">
-                                                <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${interest.status === 'PENDING' ? 'bg-yellow-50 text-yellow-600 border border-yellow-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
-                                                    {interest.status === 'PENDING' ? 'Waiting for Command' : interest.status}
+                                                {interest.status === 'REJECTED' ? (
+                                                    <div className="flex flex-col items-end gap-1">
+                                                        <span className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-200">
+                                                            ✕ Admin Rejected
+                                                        </span>
+                                                        <span className="text-[8px] font-black text-red-400 uppercase tracking-widest">Meeting request was denied</span>
+                                                    </div>
+                                                ) : (
+                                                <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${
+                                                    interest.status === 'CALLED' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' :
+                                                    interest.scheduledAt ? 'bg-blue-50 text-blue-600 border border-blue-100' :
+                                                    'bg-yellow-50 text-yellow-600 border border-yellow-100'
+                                                }`}>
+                                                    {interest.status === 'CALLED' ? 'Meeting Approved ✓' :
+                                                     interest.scheduledAt ? 'Pending Admin Approval' :
+                                                     'Waiting for Command'}
                                                 </span>
+                                                )}
                                                 <button 
                                                     onClick={() => handleWithdrawInterest(interest.id)}
                                                     className="p-4 bg-red-50 text-red-300 hover:text-red-500 hover:bg-red-100 rounded-2xl transition-all"
@@ -516,36 +522,6 @@ const EmployerDashboard = () => {
         </div>
       </main>
 
-      {/* AI Estimator Modal */}
-      {showEstimator && (
-          <div className="fixed inset-0 bg-[#32312D]/60 backdrop-blur-xl z-50 flex items-center justify-center p-6 animate-in fade-in duration-300">
-              <div className="bg-white w-full max-w-2xl rounded-[60px] shadow-2xl p-12 border border-[#32312D]/10 relative">
-                  <button onClick={() => setShowEstimator(false)} className="absolute top-8 right-8 text-slate-400 hover:text-[#32312D] text-2xl transition-colors font-light">✕</button>
-                  <div className="mb-12">
-                      <div className="text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-4">Neural Analysis Engine</div>
-                      <h2 className="text-4xl font-black text-[#32312D] tracking-tighter mb-2 uppercase">AI Project Estimator</h2>
-                      <p className="text-slate-500 font-black uppercase text-[10px] tracking-widest">Predictive modeling for budget & timeline synchronization...</p>
-                  </div>
-                  <div className="space-y-10">
-                      <div className="space-y-4 text-left">
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Project Architecture Requirements</label>
-                        <textarea className="w-full px-8 py-6 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-[32px] outline-none focus:border-[#3A3F5F] transition-all font-medium text-slate-600 h-40 resize-none" placeholder="Enter high-level technical scope..."></textarea>
-                      </div>
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="p-8 bg-[#E7E6E2]/50 rounded-[32px] border border-[#32312D]/10">
-                          <div className="text-[8px] font-black text-[#3A3F5F]/60 uppercase tracking-widest mb-2">Estimated Allocation</div>
-                          <div className="text-2xl font-black text-[#3A3F5F] tracking-tighter">$12k - $18k</div>
-                        </div>
-                        <div className="p-8 bg-[#E7E6E2] rounded-[32px] border border-[#32312D]/10">
-                          <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Estimated Cycle</div>
-                          <div className="text-2xl font-black text-[#32312D] tracking-tighter">4-6 Weeks</div>
-                        </div>
-                      </div>
-                      <button type="button" className="w-full bg-[#3A3F5F] text-white py-6 rounded-3xl font-black uppercase text-[10px] tracking-[0.4em] shadow-lg shadow-[#3A3F5F]/20 hover:bg-[#3A3F5F]/90 transition-all">Compute AI Analysis</button>
-                  </div>
-              </div>
-          </div>
-      )}
     </div>
   );
 };

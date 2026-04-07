@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Navbar from '@/components/Navbar';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import api, { getFileUrl } from '@/lib/api';
@@ -128,6 +127,16 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleRejectInterest = async (id: string) => {
+    if (!confirm('Reject this meeting request? The employer will be notified.')) return;
+    try {
+      await api.patch(`/admin/interests/${id}/status`, { status: 'REJECTED' });
+      fetchData();
+    } catch (error) {
+      alert('Failed to reject meeting request');
+    }
+  };
+
   const handleCreateMeeting = async (id: string) => {
     try {
       await api.post(`/admin/interests/${id}/meeting`);
@@ -177,7 +186,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#E7E6E2] text-[#32312D] flex flex-col font-sans selection:bg-[#3A3F5F] selection:text-white">
-      <Navbar />
+      
       
       <main className="max-w-[1600px] mx-auto w-full px-6 py-12 flex-1">
         {/* Header Section */}
@@ -314,12 +323,13 @@ const AdminDashboard = () => {
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8 text-left">
                         <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Engagement Queue</h2>
                         <div className="bg-white rounded-[32px] border border-[#32312D]/10 overflow-hidden shadow-sm">
-                            <table className="w-full text-left text-[#32312D]">
+                                <table className="w-full text-left text-[#32312D]">
                                 <thead className="bg-[#3A3F5F]/5 text-[10px] font-black text-[#32312D]/40 uppercase tracking-[0.2em]">
                                     <tr>
                                         <th className="px-8 py-6">Corporate Entity</th>
                                         <th className="px-8 py-6">Target Node</th>
                                         <th className="px-8 py-6">Protocol</th>
+                                        <th className="px-8 py-6">Requested Time</th>
                                         <th className="px-8 py-6">Status</th>
                                         <th className="px-8 py-6 text-right">Actions</th>
                                     </tr>
@@ -335,14 +345,33 @@ const AdminDashboard = () => {
                                                 </span>
                                             </td>
                                             <td className="px-8 py-6">
+                                                {interest.scheduledAt ? (
+                                                    <div className="text-left">
+                                                        <div className="text-[10px] font-black text-[#32312D] uppercase tracking-tight">{new Date(interest.scheduledAt).toLocaleDateString()}</div>
+                                                        <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mt-0.5">{new Date(interest.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-[10px] font-black text-[#32312D]/20 uppercase tracking-widest">Not Set</span>
+                                                )}
+                                            </td>
+                                            <td className="px-8 py-6">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`w-1.5 h-1.5 rounded-full ${interest.status === 'PENDING' ? 'bg-orange-400 animate-pulse' : 'bg-emerald-500'}`}></span>
-                                                    <span className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest">{interest.status}</span>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${
+                                                        interest.status === 'PENDING' ? 'bg-orange-400 animate-pulse' :
+                                                        interest.status === 'REJECTED' ? 'bg-red-500' :
+                                                        interest.status === 'CALLED' ? 'bg-indigo-500' :
+                                                        'bg-emerald-500'
+                                                    }`}></span>
+                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${
+                                                        interest.status === 'REJECTED' ? 'text-red-500' : 'text-[#32312D]/40'
+                                                    }`}>{interest.status}</span>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6 text-right">
                                                 <div className="flex justify-end gap-3">
-                                                    {interest.joinUrl ? (
+                                                    {interest.status === 'REJECTED' ? (
+                                                        <span className="px-4 py-2.5 bg-red-50 text-red-400 border border-red-100 rounded-xl font-black text-[10px] uppercase tracking-widest">Meeting Denied</span>
+                                                    ) : interest.joinUrl ? (
                                                         <a 
                                                             href={`https://leadhunter-crm.work.gd${interest.joinUrl}`} 
                                                             target="_blank" 
@@ -351,6 +380,21 @@ const AdminDashboard = () => {
                                                         >
                                                             <span>🔗</span> Join Room
                                                         </a>
+                                                    ) : interest.scheduledAt ? (
+                                                        <>
+                                                            <button 
+                                                                onClick={() => handleCreateMeeting(interest.id)}
+                                                                className="bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-sm"
+                                                            >
+                                                                ✓ Approve
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleRejectInterest(interest.id)}
+                                                                className="bg-red-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-all shadow-sm"
+                                                            >
+                                                                ✕ Reject
+                                                            </button>
+                                                        </>
                                                     ) : (
                                                         <button 
                                                             onClick={() => handleCreateMeeting(interest.id)}
@@ -359,7 +403,9 @@ const AdminDashboard = () => {
                                                             Create Room
                                                         </button>
                                                     )}
-                                                    <button onClick={() => { setOnboardingItem(interest); setOnboardingForm(prev => ({ ...prev, type: interest.type })); }} className="bg-[#32312D] text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#3A3F5F] transition-all shadow-sm">Review Link</button>
+                                                    {interest.status !== 'REJECTED' && (
+                                                        <button onClick={() => { setOnboardingItem(interest); setOnboardingForm(prev => ({ ...prev, type: interest.type })); }} className="bg-[#32312D] text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#3A3F5F] transition-all shadow-sm">Review</button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -594,6 +640,27 @@ const AdminDashboard = () => {
                                   </a>
                               )}
                           </div>
+
+                          <div className="space-y-4 pt-4">
+                              <div className="text-[10px] font-black text-[#32312D]/40 uppercase mb-5 tracking-[0.3em]">Interested Corporate Entities</div>
+                              {viewingEngineer.interests && viewingEngineer.interests.length > 0 ? (
+                                  <div className="flex flex-col gap-3">
+                                      {viewingEngineer.interests.map((interest: any) => (
+                                          <div key={interest.id} className="p-4 bg-[#E7E6E2]/30 rounded-2xl border border-[#32312D]/5 flex justify-between items-center text-left">
+                                              <div>
+                                                  <div className="text-xs font-black text-[#32312D] uppercase">{interest.employer?.companyName || 'Unknown Entity'}</div>
+                                                  <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mt-1">Status: {interest.status}</div>
+                                              </div>
+                                              <span className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest ${interest.type === 'LEASE' ? 'bg-[#3A3F5F]/5 text-[#3A3F5F]' : 'bg-white text-[#32312D]/60'}`}>
+                                                  {interest.type}
+                                              </span>
+                                          </div>
+                                      ))}
+                                  </div>
+                              ) : (
+                                  <div className="text-[#32312D]/30 text-xs font-black uppercase tracking-widest">No interests signaled yet.</div>
+                              )}
+                          </div>
                       </div>
 
                       <div className="pt-12 mt-12 border-t border-[#32312D]/5 text-left">
@@ -665,6 +732,29 @@ const AdminDashboard = () => {
                                   )}
                               </div>
                           </div>
+                      </div>
+
+                      <div className="mt-12 text-left">
+                          <div className="text-[10px] font-black text-[#3A3F5F] uppercase mb-8 tracking-[0.3em] border-b border-[#32312D]/5 pb-4 text-left">Targeted Nodes (Interests)</div>
+                          {viewingEmployer.interests && viewingEmployer.interests.length > 0 ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {viewingEmployer.interests.map((interest: any) => (
+                                      <div key={interest.id} className="p-6 bg-white rounded-[24px] border border-[#32312D]/10 flex flex-col gap-3 shadow-sm hover:border-[#3A3F5F]/30 transition-all text-left">
+                                          <div className="flex justify-between items-start">
+                                              <div>
+                                                  <div className="text-xs font-black text-[#32312D] uppercase tracking-tight">{interest.engineer?.fullName || 'Anonymous Node'}</div>
+                                                  <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mt-1">Status: {interest.status}</div>
+                                              </div>
+                                              <span className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest ${interest.type === 'LEASE' ? 'bg-[#3A3F5F]/5 text-[#3A3F5F]' : 'bg-[#E7E6E2] text-[#32312D]/60'}`}>
+                                                  {interest.type}
+                                              </span>
+                                          </div>
+                                      </div>
+                                  ))}
+                              </div>
+                          ) : (
+                              <div className="text-[#32312D]/30 text-xs font-black uppercase tracking-widest">No targets acquired yet.</div>
+                          )}
                       </div>
 
                       <div className="mt-20 pt-12 border-t border-[#32312D]/5 flex justify-end gap-6 text-left">
