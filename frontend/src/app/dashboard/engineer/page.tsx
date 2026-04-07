@@ -6,9 +6,18 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api, { getFileUrl } from '@/lib/api';
 
-const FileUploadZone = ({ id, label, accept, icon, onFileSelect, currentFile }: any) => {
+const FileUploadZone = ({ id, label, accept, icon, onFileSelect, currentFile, maxSize }: any) => {
   const [dragActive, setDragActive] = useState(false);
   const [fileName, setFileName] = useState('');
+
+  const validateAndSelect = (file: File) => {
+    if (maxSize && file.size > maxSize) {
+      alert(`File size exceeds limit of ${Math.round(maxSize / (1024 * 1024))}MB.`);
+      return;
+    }
+    setFileName(file.name);
+    onFileSelect(file);
+  };
 
   const handleDrag = (e: any) => {
     e.preventDefault();
@@ -25,18 +34,14 @@ const FileUploadZone = ({ id, label, accept, icon, onFileSelect, currentFile }: 
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      setFileName(file.name);
-      onFileSelect(file);
+      validateAndSelect(e.dataTransfer.files[0]);
     }
   };
 
   const handleChange = (e: any) => {
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setFileName(file.name);
-      onFileSelect(file);
+      validateAndSelect(e.target.files[0]);
     }
   };
 
@@ -88,15 +93,15 @@ const EngineerDashboard = () => {
     contracts: [],
     invoices: [],
     suggestedJobs: [
-      { id: '1', title: 'Senior AI Engineer', company: 'Google', budget: '$150/hr' },
-      { id: '2', title: 'LLM Fine-tuning Expert', company: 'OpenAI', budget: '$200/hr' }
+      { id: '1', title: 'Senior AI Engineer', company: 'Verified Client', budget: '$150/hr' },
+      { id: '2', title: 'LLM Fine-tuning Expert', company: 'Verified Client', budget: '$200/hr' }
     ],
     endorsements: [
-      { id: '1', from: 'Mark Z.', company: 'Meta', text: 'Exceptional work on the Llama integration.' }
+      { id: '1', from: 'Verified Partner', company: 'Platform Client', text: 'Exceptional work on the Llama integration.' }
     ],
     milestones: { totalEarned: 45000, nextGoal: 50000 },
     timesheets: [
-      { id: '1', date: '2023-11-20', hours: 8, contract: 'Acme Corp', status: 'APPROVED' }
+      { id: '1', date: '2023-11-20', hours: 8, contract: 'Verified Client', status: 'APPROVED' }
     ]
   });
   const [fetching, setFetching] = useState(true);
@@ -110,6 +115,14 @@ const EngineerDashboard = () => {
   const [selectedPic, setSelectedPic] = useState<File | null>(null);
   const [picPreview, setSelectedPicPreview] = useState<string | null>(null);
 
+  // Workspace / messaging state
+  const [wsEmployer, setWsEmployer] = useState<any>(null);
+  const [wsMessages, setWsMessages] = useState<any[]>([]);
+  const [wsNewMsg, setWsNewMsg] = useState('');
+  const [wsSending, setWsSending] = useState(false);
+  const wsMsgEndRef = React.useRef<HTMLDivElement>(null);
+  const wsPollRef = React.useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (!loading && (!user || user.role !== 'ENGINEER')) {
       router.push('/login');
@@ -117,6 +130,17 @@ const EngineerDashboard = () => {
       fetchDashboardData();
     }
   }, [user, loading, router]);
+
+  React.useEffect(() => {
+    if (!wsEmployer) return;
+    fetchWsMessages(wsEmployer.userId);
+    wsPollRef.current = setInterval(() => fetchWsMessages(wsEmployer.userId), 5000);
+    return () => { if (wsPollRef.current) clearInterval(wsPollRef.current); };
+  }, [wsEmployer]);
+
+  React.useEffect(() => {
+    wsMsgEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [wsMessages]);
 
   const fetchDashboardData = async () => {
     setFetching(true);
@@ -139,8 +163,33 @@ const EngineerDashboard = () => {
     }
   };
 
+  const fetchWsMessages = async (receiverId: string) => {
+    try {
+      const res = await api.get(`/messages/${receiverId}`);
+      setWsMessages(res.data || []);
+    } catch (err) { console.error(err); }
+  };
+
+  const handleWsSend = async () => {
+    if (!wsNewMsg.trim() || !wsEmployer || wsSending) return;
+    setWsSending(true);
+    try {
+      await api.post('/messages', { receiverId: wsEmployer.userId, content: wsNewMsg.trim() });
+      setWsNewMsg('');
+      await fetchWsMessages(wsEmployer.userId);
+    } catch { alert('Failed to send'); }
+    finally { setWsSending(false); }
+  };
+
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check video size limit
+    if (selectedVideo && selectedVideo.size > 20 * 1024 * 1024) {
+        alert('Video file size exceeds 20MB limit. Please compress or select a smaller file.');
+        return;
+    }
+
     setSavingProfile(true);
     const formData = new FormData();
     
@@ -308,7 +357,7 @@ const EngineerDashboard = () => {
         {/* Sidebar Nav + Content */}
         <div className="flex flex-col lg:flex-row gap-12">
             <aside className="w-full lg:w-64 space-y-2">
-                {['contracts', 'interests', 'tasks', 'timesheets', 'earnings', 'jobs', 'profile'].map((tab) => (
+                {['contracts', 'interests', 'tasks', 'timesheets', 'earnings', 'workspace', 'profile'].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -345,7 +394,7 @@ const EngineerDashboard = () => {
                                             <div className="w-20 h-20 rounded-3xl bg-[#3A3F5F]/5 border border-[#3A3F5F]/10 flex items-center justify-center text-3xl grayscale opacity-50">🏢</div>
                                             <div>
                                                 <div className="text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-2">Corporate Node</div>
-                                                <h3 className="text-2xl font-black text-[#32312D] tracking-tight mb-2 uppercase">{contract.employer.companyName}</h3>
+                                                <h3 className="text-2xl font-black text-[#32312D] tracking-tight mb-2 uppercase">Verified Client</h3>
                                                 <div className="text-sm font-bold text-[#32312D]/40 flex items-center gap-2">
                                                     Allocation: <span className="text-[#32312D]">${contract.salary.toLocaleString()}</span>
                                                 </div>
@@ -400,8 +449,8 @@ const EngineerDashboard = () => {
                                         <div className="flex items-center gap-8 text-left w-full md:w-auto">
                                             <div className="w-20 h-20 rounded-3xl bg-[#3A3F5F]/5 border border-[#3A3F5F]/10 flex items-center justify-center text-3xl grayscale opacity-50">🏢</div>
                                             <div>
-                                                <div className="text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-2">Corporate Node</div>
-                                                <h3 className="text-2xl font-black text-[#32312D] tracking-tight mb-2 uppercase">{interest.employer.companyName}</h3>
+                                                <div className="text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-2">Platform Client</div>
+                                                <h3 className="text-2xl font-black text-[#32312D] tracking-tight mb-2 uppercase">Verified Employer</h3>
                                                 <div className="text-sm font-bold text-[#32312D]/40 flex items-center gap-2">
                                                     Target Job: <span className="text-[#32312D]">{interest.job.title}</span>
                                                 </div>
@@ -426,6 +475,112 @@ const EngineerDashboard = () => {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {activeTab === 'workspace' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="text-2xl font-black uppercase tracking-tight text-[#32312D]">Workspace Inbox</h2>
+                            <div className="h-px flex-1 mx-8 bg-[#32312D]/10"></div>
+                            <span className="text-[10px] font-black text-[#32312D]/30 uppercase tracking-widest flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span>
+                                Live Channel
+                            </span>
+                        </div>
+
+                        {data.contracts.length === 0 ? (
+                            <div className="p-20 rounded-[40px] border border-dashed border-[#32312D]/10 bg-white/50 text-center">
+                                <div className="text-4xl mb-4 opacity-20 grayscale">💬</div>
+                                <div className="text-[#32312D]/40 font-black uppercase text-[10px] tracking-widest">No active contracts. You have no employers to chat with yet.</div>
+                            </div>
+                        ) : (
+                            <div className="bg-white rounded-[40px] border border-[#32312D]/10 shadow-sm overflow-hidden flex h-[70vh]">
+                                {/* Employer List */}
+                                <div className="w-72 shrink-0 border-r border-[#32312D]/8 flex flex-col">
+                                    <div className="p-6 border-b border-[#32312D]/8">
+                                        <div className="text-[8px] font-black text-[#32312D]/30 uppercase tracking-[0.3em]">Your Employers</div>
+                                    </div>
+                                    <div className="overflow-y-auto flex-1">
+                                        {data.contracts.map((contract: any) => (
+                                            <button
+                                                key={contract.id}
+                                                onClick={() => { setWsEmployer(contract.employer); setWsMessages([]); }}
+                                                className={`w-full px-6 py-5 flex items-center gap-4 text-left transition-all hover:bg-[#E7E6E2]/50 border-b border-[#32312D]/5 ${wsEmployer?.id === contract.employer?.id ? 'bg-[#3A3F5F]/5 border-l-2 border-l-[#3A3F5F]' : ''}`}
+                                            >
+                                                <div className="w-10 h-10 rounded-2xl bg-[#3A3F5F]/10 flex items-center justify-center font-black text-[#3A3F5F] text-sm shrink-0">
+                                                    🏢
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <div className="font-black text-[#32312D] text-xs uppercase tracking-tight truncate">Verified Client</div>
+                                                    <div className={`text-[8px] font-black uppercase tracking-widest mt-0.5 ${contract.status === 'ACTIVE' ? 'text-emerald-500' : 'text-[#32312D]/30'}`}>{contract.status}</div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Chat Area */}
+                                <div className="flex-1 flex flex-col min-w-0">
+                                    {!wsEmployer ? (
+                                        <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 p-10">
+                                            <div className="w-20 h-20 rounded-[28px] bg-[#E7E6E2] flex items-center justify-center text-4xl">💬</div>
+                                            <div className="text-[10px] font-black text-[#32312D]/30 uppercase tracking-widest">Select an employer to open the channel</div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="px-8 py-5 border-b border-[#32312D]/8 flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-2xl bg-[#3A3F5F] flex items-center justify-center font-black text-white text-sm">
+                                                    🏢
+                                                </div>
+                                                <div>
+                                                    <div className="font-black text-[#32312D] uppercase text-sm tracking-tight">Verified Client</div>
+                                                    <div className="text-[8px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span> Active Channel
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
+                                                {wsMessages.length === 0 && (
+                                                    <div className="text-center text-[10px] font-black text-[#32312D]/20 uppercase tracking-widest mt-10">No messages yet. Start the conversation!</div>
+                                                )}
+                                                {wsMessages.map((msg: any) => {
+                                                    const isMe = msg.senderId === user?.id;
+                                                    return (
+                                                        <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                                            <div className={`max-w-[70%] px-5 py-3 rounded-3xl ${isMe ? 'bg-[#3A3F5F] text-white rounded-br-lg' : 'bg-[#E7E6E2] text-[#32312D] rounded-bl-lg'}`}>
+                                                                <p className="text-sm font-medium leading-relaxed">{msg.content}</p>
+                                                                <p className={`text-[8px] font-black uppercase tracking-widest mt-1 ${isMe ? 'text-white/50 text-right' : 'text-[#32312D]/40'}`}>
+                                                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                                <div ref={wsMsgEndRef} />
+                                            </div>
+                                            <div className="px-6 py-5 border-t border-[#32312D]/8 flex items-center gap-4">
+                                                <input
+                                                    type="text"
+                                                    value={wsNewMsg}
+                                                    onChange={e => setWsNewMsg(e.target.value)}
+                                                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleWsSend()}
+                                                    placeholder="Type a message…"
+                                                    className="flex-1 px-6 py-4 bg-[#E7E6E2]/50 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-medium text-[#32312D] text-sm placeholder:text-[#32312D]/30"
+                                                />
+                                                <button
+                                                    onClick={handleWsSend}
+                                                    disabled={wsSending || !wsNewMsg.trim()}
+                                                    className="bg-[#3A3F5F] text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#32312D] transition-all disabled:opacity-40 flex items-center gap-2 shadow-md"
+                                                >
+                                                    {wsSending ? '…' : '↑ Send'}
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>
@@ -514,6 +669,7 @@ const EngineerDashboard = () => {
 
                                     <div className="space-y-10">
                                         <FileUploadZone 
+                                          id="resume-upload"
                                           label="Dossier (Resume)" 
                                           accept=".pdf,.doc,.docx"
                                           icon="📄"
@@ -522,14 +678,17 @@ const EngineerDashboard = () => {
                                         />
 
                                         <FileUploadZone 
-                                          label="Intro Feed (Video)" 
+                                          id="video-upload"
+                                          label="Intro Feed (Video) - Max 20MB" 
                                           accept="video/*"
                                           icon="🎥"
                                           currentFile={profile.videoUrl}
                                           onFileSelect={setSelectedVideo}
+                                          maxSize={20 * 1024 * 1024}
                                         />
 
                                         <FileUploadZone 
+                                          id="cert-upload"
                                           label="Accolades (Certifications)" 
                                           accept="image/*,.pdf"
                                           icon="🏆"

@@ -22,6 +22,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
 
   useEffect(() => {
+    // Wake up the backend (Render free tier spin-up)
+    api.get('/health').catch(() => {});
+
     const fetchUser = async () => {
       const token = localStorage.getItem('token');
       if (token) {

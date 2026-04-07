@@ -84,20 +84,14 @@ export default function EngineerProfilePage() {
           <div className="flex flex-col md:flex-row justify-between items-end gap-8">
               <div className="flex items-center gap-10">
                   <div className="w-40 h-40 rounded-[40px] bg-white flex items-center justify-center text-7xl font-black text-[#3A3F5F] border-2 border-[#32312D]/10 shadow-2xl overflow-hidden">
-                    {engineer.profilePic ? (
-                      <img 
-                        src={getFileUrl(engineer.profilePic)} 
-                        alt={engineer.fullName} 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : engineer.fullName.charAt(0)}
+                    👤
                   </div>
                   <div className="text-left">
                       <div className="flex items-center gap-4 mb-4">
                         <span className="bg-[#3A3F5F]/10 text-[#3A3F5F] text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest border border-[#3A3F5F]/20">Verified Asset</span>
                         {engineer.isFeatured && <span className="bg-[#32312D] text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">Elite Featured</span>}
                       </div>
-                      <h1 className="text-6xl font-black text-[#32312D] uppercase tracking-tighter mb-2">{engineer.fullName}</h1>
+                      <h1 className="text-6xl font-black text-[#32312D] uppercase tracking-tighter mb-2">Verified Specialist {engineer.id.slice(0, 5).toUpperCase()}</h1>
                       <p className="text-slate-400 text-lg font-black uppercase tracking-[0.2em]">{engineer.country} • {engineer.yearsExperience}yr Experience</p>
                   </div>
               </div>
@@ -213,19 +207,11 @@ export default function EngineerProfilePage() {
                       disabled={!interestId}
                       className="w-full bg-[#32312D] text-white py-6 rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-black transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     >
-                      Schedule Meeting
+                      Request Meeting
                     </button>
-                    <div className="py-6 flex items-center gap-4">
-                        <div className="flex-1 h-[1px] bg-[#32312D]/10"></div>
-                        <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">OR</span>
-                        <div className="flex-1 h-[1px] bg-[#32312D]/10"></div>
-                    </div>
-                    <button 
-                      onClick={() => router.push('/messages')} 
-                      className="w-full bg-transparent border border-[#32312D]/10 text-slate-600 py-6 rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:border-[#3A3F5F] hover:text-[#3A3F5F] transition-all"
-                    >
-                      Message Asset
-                    </button>
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest text-center pt-2 leading-relaxed">
+                      All contact is managed through platform admin. Direct communication is not permitted.
+                    </p>
                   </div>
                 ) : !user ? (
                   <div className="text-center">
@@ -241,21 +227,7 @@ export default function EngineerProfilePage() {
                 )}
 
                 <div className="mt-12 pt-12 border-t border-[#32312D]/10 space-y-6">
-                    {engineer.resumeUrl && (
-                        <Link 
-                            href={getFileUrl(engineer.resumeUrl)} 
-                            target="_blank"
-                            className="flex items-center justify-between p-6 bg-[#E7E6E2] border border-[#32312D]/10 rounded-[24px] hover:border-[#3A3F5F] transition-all group"
-                        >
-                            <div className="flex items-center gap-4">
-                                <span className="text-xl">📄</span>
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-[#32312D] transition-colors">Neural Resume</span>
-                            </div>
-                            <span className="text-[#3A3F5F]">↓</span>
-                        </Link>
-                    )}
-
-                    <div className="space-y-4 pt-4">
+                    <div className="space-y-4">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm">✔</div>
                             <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Identity Verified</div>
@@ -267,6 +239,11 @@ export default function EngineerProfilePage() {
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 shadow-sm">✦</div>
                             <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Arctic Standard Certified</div>
+                        </div>
+                        <div className="p-5 bg-[#E7E6E2]/60 rounded-2xl border border-[#32312D]/10 mt-4">
+                            <p className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest leading-relaxed">
+                                🔒 All hiring is managed through the platform. Resumes and personal contact details are protected and only shared after admin approval.
+                            </p>
                         </div>
                     </div>
                 </div>

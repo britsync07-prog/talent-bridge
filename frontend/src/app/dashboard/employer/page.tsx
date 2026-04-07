@@ -28,6 +28,16 @@ const EmployerDashboard = () => {
     ]
   });
   const [fetching, setFetching] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  // Workspace / messaging state
+  const [selectedEngineer, setSelectedEngineer] = useState<any>(null);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [sendingMsg, setSendingMsg] = useState(false);
+  const msgEndRef = React.useRef<HTMLDivElement>(null);
+  const msgPollRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const hasFetched = React.useRef(false);
 
@@ -42,14 +52,28 @@ const EmployerDashboard = () => {
     }
   }, [user?.id, user?.role, loading, router]);
 
+  // Poll messages when a workspace engineer is selected
+  React.useEffect(() => {
+    if (!selectedEngineer) return;
+    fetchMessages(selectedEngineer.userId);
+    msgPollRef.current = setInterval(() => fetchMessages(selectedEngineer.userId), 5000);
+    return () => { if (msgPollRef.current) clearInterval(msgPollRef.current); };
+  }, [selectedEngineer]);
+
+  // Scroll to bottom on new messages
+  React.useEffect(() => {
+    msgEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   const fetchDashboardData = async () => {
     setFetching(true);
     try {
-      const [jobsRes, contractsRes, invoicesRes, engineersRes] = await Promise.all([
+      const [jobsRes, contractsRes, invoicesRes, engineersRes, profileRes] = await Promise.all([
         api.get('/jobs/my-jobs'),
         api.get('/contracts'),
         api.get('/payments/invoices'),
-        api.get('/engineers')
+        api.get('/engineers'),
+        api.get('/employer/profile')
       ]);
       setData((prev: any) => ({
         ...prev,
@@ -58,6 +82,7 @@ const EmployerDashboard = () => {
         invoices: invoicesRes.data || [],
         featuredEngineers: (engineersRes.data || []).filter((e: any) => e.isFeatured).slice(0, 4)
       }));
+      setProfile(profileRes.data);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
     } finally {
@@ -92,6 +117,50 @@ const EmployerDashboard = () => {
       fetchDashboardData();
     } catch (err) {
       alert(`Failed to mark job as ${newStatus}`);
+    }
+  };
+
+  const handleProfileSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile) return;
+    setSavingProfile(true);
+    try {
+      await api.patch('/employer/profile', {
+        companyName: profile.companyName,
+        website: profile.website,
+        location: profile.location,
+        industry: profile.industry,
+        size: profile.size,
+        description: profile.description,
+      });
+      alert('Corporate Metadata Updated.');
+    } catch (err) {
+      alert('Failed to save profile. Please try again.');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const fetchMessages = async (receiverId: string) => {
+    try {
+      const res = await api.get(`/messages/${receiverId}`);
+      setMessages(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch messages', err);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedEngineer || sendingMsg) return;
+    setSendingMsg(true);
+    try {
+      await api.post('/messages', { receiverId: selectedEngineer.userId, content: newMessage.trim() });
+      setNewMessage('');
+      await fetchMessages(selectedEngineer.userId);
+    } catch (err) {
+      alert('Failed to send message');
+    } finally {
+      setSendingMsg(false);
     }
   };
 
@@ -169,10 +238,10 @@ const EmployerDashboard = () => {
                     <div className="absolute top-0 right-0 bg-[#3A3F5F] text-white text-[8px] font-black px-4 py-1.5 uppercase tracking-[0.2em] rounded-bl-2xl">Elite</div>
                     <div className="flex items-center gap-5 mb-6">
                       <div className="w-14 h-14 bg-[#E7E6E2] rounded-2xl flex items-center justify-center text-xl font-bold text-[#3A3F5F] border border-[#32312D]/10 group-hover:bg-[#3A3F5F] group-hover:text-white transition-all">
-                        {eng.fullName ? eng.fullName.charAt(0) : 'E'}
+                        👤
                       </div>
                       <div>
-                        <div className="font-black text-[#32312D] text-lg tracking-tight line-clamp-1 uppercase">{eng.fullName}</div>
+                        <div className="font-black text-[#32312D] text-lg tracking-tight line-clamp-1 uppercase">Verified Engineer</div>
                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{eng.country}</div>
                       </div>
                     </div>
@@ -193,7 +262,7 @@ const EmployerDashboard = () => {
         {/* Tabs & Content */}
         <div className="flex flex-col lg:flex-row gap-12">
             <aside className="w-full lg:w-64 space-y-2">
-                {['jobs', 'interests', 'team', 'billing', 'analytics', 'saved', 'profile'].map((tab) => (
+                {['jobs', 'interests', 'team', 'workspace', 'billing', 'analytics', 'saved', 'profile'].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -482,37 +551,190 @@ const EmployerDashboard = () => {
                     </div>
                 )}
 
+                {activeTab === 'workspace' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="text-2xl font-black uppercase tracking-tight text-[#32312D]">Team Workspace</h2>
+                            <div className="h-px flex-1 mx-8 bg-[#32312D]/10"></div>
+                            <span className="text-[10px] font-black text-[#32312D]/30 uppercase tracking-widest flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span>
+                                Live Channel
+                            </span>
+                        </div>
+
+                        {data.contracts.length === 0 ? (
+                            <div className="p-20 rounded-[40px] border border-dashed border-[#32312D]/10 bg-white/50 text-center">
+                                <div className="text-4xl mb-4 opacity-20 grayscale">💬</div>
+                                <div className="text-[#32312D]/40 font-black uppercase text-[10px] tracking-widest">No active contracts. Hire an engineer to start collaborating.</div>
+                            </div>
+                        ) : (
+                            <div className="bg-white rounded-[40px] border border-[#32312D]/10 shadow-sm overflow-hidden flex h-[70vh]">
+                                {/* Engineer List Sidebar */}
+                                <div className="w-72 shrink-0 border-r border-[#32312D]/8 flex flex-col">
+                                    <div className="p-6 border-b border-[#32312D]/8">
+                                        <div className="text-[8px] font-black text-[#32312D]/30 uppercase tracking-[0.3em]">Your Engineers</div>
+                                    </div>
+                                    <div className="overflow-y-auto flex-1">
+                                        {data.contracts.map((contract: any) => (
+                                            <button
+                                                key={contract.id}
+                                                onClick={() => { setSelectedEngineer(contract.engineer); setMessages([]); }}
+                                                className={`w-full px-6 py-5 flex items-center gap-4 text-left transition-all hover:bg-[#E7E6E2]/50 border-b border-[#32312D]/5 ${selectedEngineer?.id === contract.engineer?.id ? 'bg-[#3A3F5F]/5 border-l-2 border-l-[#3A3F5F]' : ''}`}
+                                            >
+                                                <div className="w-10 h-10 rounded-2xl bg-[#3A3F5F]/10 flex items-center justify-center font-black text-[#3A3F5F] text-sm shrink-0">
+                                                    👤
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <div className="font-black text-[#32312D] text-xs uppercase tracking-tight truncate">Resource {contract.id.slice(0, 8).toUpperCase()}</div>
+                                                    <div className={`text-[8px] font-black uppercase tracking-widest mt-0.5 ${contract.status === 'ACTIVE' ? 'text-emerald-500' : 'text-[#32312D]/30'}`}>{contract.status}</div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Chat Area */}
+                                <div className="flex-1 flex flex-col min-w-0">
+                                    {!selectedEngineer ? (
+                                        <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 p-10">
+                                            <div className="w-20 h-20 rounded-[28px] bg-[#E7E6E2] flex items-center justify-center text-4xl">💬</div>
+                                            <div className="text-[10px] font-black text-[#32312D]/30 uppercase tracking-widest">Select an engineer to start communicating</div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {/* Chat Header */}
+                                            <div className="px-8 py-5 border-b border-[#32312D]/8 flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-2xl bg-[#3A3F5F] flex items-center justify-center font-black text-white text-sm">
+                                                    👤
+                                                </div>
+                                                <div>
+                                                    <div className="font-black text-[#32312D] uppercase text-sm tracking-tight">Platform Engineer</div>
+                                                    <div className="text-[8px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span> Active Channel
+                                                    </div>
+                                                </div>
+                            </div>
+
+                                            {/* Messages */}
+                                            <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
+                                                {messages.length === 0 && (
+                                                    <div className="text-center text-[10px] font-black text-[#32312D]/20 uppercase tracking-widest mt-10">No messages yet. Start the conversation!</div>
+                                                )}
+                                                {messages.map((msg: any) => {
+                                                    const isMe = msg.senderId === user?.id;
+                                                    return (
+                                                        <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                                            <div className={`max-w-[70%] px-5 py-3 rounded-3xl ${isMe ? 'bg-[#3A3F5F] text-white rounded-br-lg' : 'bg-[#E7E6E2] text-[#32312D] rounded-bl-lg'}`}>
+                                                                <p className="text-sm font-medium leading-relaxed">{msg.content}</p>
+                                                                <p className={`text-[8px] font-black uppercase tracking-widest mt-1 ${isMe ? 'text-white/50 text-right' : 'text-[#32312D]/40'}`}>
+                                                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                                <div ref={msgEndRef} />
+                                            </div>
+
+                                            {/* Message Input */}
+                                            <div className="px-6 py-5 border-t border-[#32312D]/8 flex items-center gap-4">
+                                                <input
+                                                    type="text"
+                                                    value={newMessage}
+                                                    onChange={e => setNewMessage(e.target.value)}
+                                                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                                                    placeholder="Type a message…"
+                                                    className="flex-1 px-6 py-4 bg-[#E7E6E2]/50 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-medium text-[#32312D] text-sm placeholder:text-[#32312D]/30"
+                                                />
+                                                <button
+                                                    onClick={handleSendMessage}
+                                                    disabled={sendingMsg || !newMessage.trim()}
+                                                    className="bg-[#3A3F5F] text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#32312D] transition-all disabled:opacity-40 flex items-center gap-2 shadow-md"
+                                                >
+                                                    {sendingMsg ? '…' : '↑ Send'}
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {activeTab === 'profile' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-12">
                         <div className="bg-white p-10 rounded-[40px] border border-[#32312D]/5 shadow-sm">
                             <h2 className="text-3xl font-black mb-10 tracking-tight uppercase text-[#32312D]">Corporate Metadata</h2>
-                            <form className="space-y-10">
+                            <form onSubmit={handleProfileSave} className="space-y-10">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                     <div className="space-y-8">
                                         <div className="space-y-3 text-left">
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Entity Name</label>
-                                            <input type="text" className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] uppercase text-xs tracking-widest" defaultValue="Acme Corp" />
+                                            <input
+                                                type="text"
+                                                className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] uppercase text-xs tracking-widest"
+                                                value={profile?.companyName || ''}
+                                                onChange={e => setProfile({ ...profile, companyName: e.target.value })}
+                                                placeholder="Your Company Name"
+                                            />
                                         </div>
                                         <div className="space-y-3 text-left">
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Neural Link (URL)</label>
-                                            <input type="text" className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] text-xs tracking-widest" defaultValue="https://acme.ai" />
+                                            <input
+                                                type="text"
+                                                className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] text-xs tracking-widest"
+                                                value={profile?.website || ''}
+                                                onChange={e => setProfile({ ...profile, website: e.target.value })}
+                                                placeholder="https://yourcompany.com"
+                                            />
                                         </div>
                                         <div className="space-y-3 text-left">
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">HQ Node Location</label>
-                                            <input type="text" className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] uppercase text-xs tracking-widest" defaultValue="San Francisco, CA" />
+                                            <input
+                                                type="text"
+                                                className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] uppercase text-xs tracking-widest"
+                                                value={profile?.location || ''}
+                                                onChange={e => setProfile({ ...profile, location: e.target.value })}
+                                                placeholder="City, Country"
+                                            />
+                                        </div>
+                                        <div className="space-y-3 text-left">
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Industry Sector</label>
+                                            <input
+                                                type="text"
+                                                className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] uppercase text-xs tracking-widest"
+                                                value={profile?.industry || ''}
+                                                onChange={e => setProfile({ ...profile, industry: e.target.value })}
+                                                placeholder="e.g. AI / FinTech"
+                                            />
                                         </div>
                                     </div>
 
                                     <div className="space-y-8">
                                         <div className="space-y-3 text-left">
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Operational Bio</label>
-                                            <textarea className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-medium text-slate-600 h-[230px] resize-none" defaultValue="Building the future of AI automation."></textarea>
+                                            <textarea
+                                                className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-medium text-slate-600 h-[230px] resize-none"
+                                                value={profile?.description || ''}
+                                                onChange={e => setProfile({ ...profile, description: e.target.value })}
+                                                placeholder="Describe your company..."
+                                            />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="pt-10 border-t border-[#E7E6E2]">
-                                    <button type="button" className="w-full md:w-auto bg-[#3A3F5F] text-white px-20 py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] hover:bg-[#3A3F5F]/90 shadow-lg shadow-[#3A3F5F]/20 transition-all">Overwrite Entity Metadata</button>
+                                <div className="pt-10 border-t border-[#E7E6E2] flex flex-col md:flex-row justify-between items-center gap-8">
+                                    <div className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest">
+                                        Sync Status: <span className={savingProfile ? 'text-[#3A3F5F] animate-pulse' : 'text-emerald-600'}>{savingProfile ? 'Broadcasting...' : 'Stable'}</span>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={savingProfile}
+                                        className="w-full md:w-auto bg-[#3A3F5F] text-white px-20 py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] hover:bg-[#3A3F5F]/90 shadow-lg shadow-[#3A3F5F]/20 transition-all disabled:opacity-50"
+                                    >
+                                        {savingProfile ? 'Syncing...' : 'Overwrite Entity Metadata'}
+                                    </button>
                                 </div>
                             </form>
                         </div>

@@ -15,10 +15,15 @@ export const getMyContracts = async (req: AuthRequest, res: Response) => {
       });
     } else if (req.user.role === 'ENGINEER') {
       const engineer = await prisma.engineerProfile.findUnique({ where: { userId: req.user.id } });
-      contracts = await prisma.contract.findMany({
+      const rawContracts = await prisma.contract.findMany({
         where: { engineerId: engineer?.id },
         include: { employer: true, tasks: true }
       });
+      // Redact employer info
+      contracts = rawContracts.map(c => ({
+        ...c,
+        employer: c.employer ? { id: c.employer.id, companyName: 'Verified Client' } : null
+      }));
     }
 
     res.json(contracts);
@@ -44,6 +49,10 @@ export const getContractById = async (req: AuthRequest, res: Response) => {
 
     if (!contract) {
       return res.status(404).json({ message: 'Contract not found' });
+    }
+
+    if (req.user.role === 'ENGINEER' && contract.employer) {
+      (contract as any).employer = { id: contract.employer.id, companyName: 'Verified Client' };
     }
 
     res.json(contract);

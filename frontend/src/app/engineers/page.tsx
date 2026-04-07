@@ -76,10 +76,10 @@ const EngineersPage = () => {
                     )}
                     
                     <div className="w-20 h-20 bg-[#E7E6E2] rounded-2xl mb-8 flex items-center justify-center text-3xl font-black text-[#3A3F5F] border border-[#32312D]/10">
-                        {eng.fullName.charAt(0)}
+                        👤
                     </div>
 
-                    <h3 className="text-2xl font-black text-[#32312D] mb-1 group-hover:text-[#3A3F5F] transition-colors uppercase tracking-tight">{eng.fullName}</h3>
+                    <h3 className="text-2xl font-black text-[#32312D] mb-1 group-hover:text-[#3A3F5F] transition-colors uppercase tracking-tight">Specialist {eng.id.slice(0, 5).toUpperCase()}</h3>
                     <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-8">{eng.country} • {eng.yearsExperience}yr Exp</p>
                     
                     <div className="flex-1">

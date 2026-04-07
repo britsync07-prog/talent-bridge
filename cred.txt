@@ -20,24 +20,24 @@ https://i.ibb.co.com/nsWvJpYT/photo-6239932133963140901-w.jpg
 https://i.ibb.co.com/W4sGrZHC/photo-6239932133963140899-w.jpg
 
 starteup add , investor....
-admin will get the employers intrests.
+admin will get the employers intrests. DONE
 employer have to give busniss cirtficate.
-employer also can do meeting.
+employer also can do meeting. DONE
 remove job section
 video upload limit
 task - remove ai estimator
-remove the up bar from dashboard
+remove the up bar from dashboard DONE
 corporete- compny regstration number
 message asset remove.
 job post go to admin
-remove smartmatch
+remove smartmatch DONE
 candidate can see the job only info
 disputes for ticket of all 
 wait list have jara kajer jonn bose ase
 chat frature for all
 70 pounds
-workspace for empolyer
+workspace for empolyer DONE
 pordcast setup
-solutions hide
-cases remove
+solutions hide DONE
+cases remove DONE
 talent solitions, job market , invsment network- any startup can post info and video. show this in talent
