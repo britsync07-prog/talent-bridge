@@ -16,11 +16,8 @@ const AdminDashboard = () => {
     activeContracts: 0,
     totalRevenue: 0,
     payoutHistory: [],
-    securityAlerts: [
-      { id: 1, type: 'CRITICAL', message: 'Multiple failed login attempts from IP 192.168.1.1', time: '2 mins ago' },
-      { id: 2, type: 'WARNING', message: 'New admin account created by super_admin', time: '1 hour ago' }
-    ],
-    referralData: { total: 154, successful: 42, conversion: '27.2%' }
+    securityAlerts: [] as { id: number; type: string; message: string; time: string }[],
+    referralData: { total: 0, successful: 0, conversion: '0%' }
   });
   const [engineers, setEngineers] = useState<any[]>([]);
   const [employers, setEmployers] = useState<any[]>([]);
@@ -42,13 +39,50 @@ const AdminDashboard = () => {
     setFetching(true);
     try {
       if (activeTab === 'stats') {
-        const { data } = await api.get('/admin/stats');
+        // Fetch everything needed for the stats tab in parallel
+        const [statsRes, engineersRes, logsRes] = await Promise.all([
+          api.get('/admin/stats'),
+          api.get('/admin/engineers'),
+          api.get('/admin/logs'),
+        ]);
+
+        const data = statsRes.data;
+        const allEngineers: any[] = engineersRes.data || [];
+        const allLogs: any[] = logsRes.data || [];
+
+        // Build real security alerts from recent relevant log events
+        const alertKeywords = ['login', 'registration', 'admin', 'password', 'failed'];
+        const relevantLogs = allLogs
+          .filter((l: any) => alertKeywords.some(kw => (l.action || '').toLowerCase().includes(kw) || (l.details || '').toLowerCase().includes(kw)))
+          .slice(0, 5)
+          .map((l: any, i: number) => ({
+            id: i + 1,
+            type: (l.action || '').toLowerCase().includes('login') ? 'INFO' : 'WARNING',
+            message: l.details || l.action || 'System event recorded',
+            time: new Date(l.createdAt).toLocaleString()
+          }));
+
+        // If no relevant logs yet, show a clean state
+        const securityAlerts = relevantLogs.length > 0
+          ? relevantLogs
+          : [{ id: 1, type: 'INFO', message: 'No recent security events detected', time: 'Now' }];
+
+        // Derive network growth from real counts
+        const totalEngineers = data.totalEngineers || 0;
+        const approvedEngineers = allEngineers.filter((e: any) => e.approvalStatus === 'FULLY_APPROVED').length;
+        const conversionRate = totalEngineers > 0 ? ((approvedEngineers / totalEngineers) * 100).toFixed(1) + '%' : '0%';
+
+        setEngineers(allEngineers);
         setStats(prev => ({
           ...prev,
           ...data,
-          payoutHistory: data.payoutHistory || prev.payoutHistory || [],
-          securityAlerts: data.securityAlerts || prev.securityAlerts || [],
-          referralData: data.referralData || prev.referralData || { total: 154, successful: 42, conversion: '27.2%' }
+          payoutHistory: data.payoutHistory || [],
+          securityAlerts,
+          referralData: {
+            total: data.totalEmployers || 0,       // employers = impressions/reach
+            successful: approvedEngineers,          // approved engineers = successful inductions
+            conversion: conversionRate
+          }
         }));
       } else if (activeTab === 'engineers') {
         const { data } = await api.get('/admin/engineers');
