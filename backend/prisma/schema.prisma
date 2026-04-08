@@ -53,11 +53,13 @@ model EmployerProfile {
   industry     String?
   description  String?
   location     String?
+  businessRegNumber String?
   isApproved   Boolean @default(false)
 
   jobs         Job[]
   contracts    Contract[]
   interests    Interest[]
+  savedCandidates SavedCandidate[]
 }
 
 model EngineerProfile {
@@ -89,6 +91,19 @@ model EngineerProfile {
 
   contracts                 Contract[]
   interests                 Interest[]
+  savedBy                   SavedCandidate[]
+  endorsements              Endorsement[]
+}
+
+model SavedCandidate {
+  id         String   @id @default(uuid())
+  employerId String
+  employer   EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  engineerId String
+  engineer   EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([employerId, engineerId])
 }
 
 model Job {
@@ -100,7 +115,7 @@ model Job {
   requiredSkills String
   maxBudget   Float
   duration    String
-  status      String    @default("OPEN") // OPEN, CLOSED
+  status      String    @default("OPEN") // OPEN, CLOSED, DRAFT
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -142,8 +157,29 @@ model Contract {
 
   tasks            Task[]
   invoices         Invoice[]
+  timesheets       Timesheet[]
 
   @@unique([employerId, engineerId])
+}
+
+model Timesheet {
+  id          String   @id @default(uuid())
+  contractId  String
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  date        DateTime
+  hours       Float
+  description String?
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt   DateTime @default(now())
+}
+
+model Endorsement {
+  id          String   @id @default(uuid())
+  engineerId  String
+  engineer    EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
+  fromName    String   // Name of the person/company endorsing
+  content     String
+  createdAt   DateTime @default(now())
 }
 
 model Task {
@@ -189,3 +225,4 @@ model Activity_log {
   details   String?
   createdAt DateTime @default(now())
 }
+

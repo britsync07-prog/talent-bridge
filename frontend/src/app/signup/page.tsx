@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 const SignupPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [businessRegNumber, setBusinessRegNumber] = useState('');
   const [role, setRole] = useState<'EMPLOYER' | 'ENGINEER'>('EMPLOYER');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,8 @@ const SignupPage = () => {
     setLoading(true);
     setError('');
     try {
-      await signup(email, password, role);
+      const additionalData = role === 'EMPLOYER' ? { businessRegNumber } : {};
+      await signup(email, password, role, additionalData);
       if (role === 'EMPLOYER') router.push('/dashboard/employer');
       else router.push('/dashboard/engineer');
     } catch (err: any) {
@@ -86,6 +88,19 @@ const SignupPage = () => {
                             placeholder="••••••••••••"
                           />
                       </div>
+                      {role === 'EMPLOYER' && (
+                        <div className="space-y-3 text-left animate-in fade-in slide-in-from-top-2">
+                            <label className="block text-[8px] font-black text-[#32312D]/40 uppercase tracking-[0.4em] ml-2">Business Registration Number</label>
+                            <input 
+                              type="text" 
+                              required 
+                              value={businessRegNumber}
+                              onChange={(e) => setBusinessRegNumber(e.target.value)}
+                              className="w-full bg-[#E7E6E2]/30 border-b-2 border-[#32312D]/10 py-5 px-2 text-[#32312D] outline-none focus:border-[#3A3F5F] transition-all font-black uppercase text-xs tracking-widest placeholder:text-slate-300"
+                              placeholder="REG-2026-XXXX"
+                            />
+                        </div>
+                      )}
                   </div>
 
                   <button 

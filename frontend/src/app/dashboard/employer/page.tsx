@@ -16,16 +16,16 @@ const EmployerDashboard = () => {
     invoices: [],
     activityLogs: [],
     featuredEngineers: [],
-    savedCandidates: [
-      { id: '1', fullName: 'Jane Doe', skills: 'Python, PyTorch', country: 'Germany' },
-      { id: '2', fullName: 'John Smith', skills: 'React, Node.js', country: 'Canada' }
-    ],
-    upcomingInterviews: [
-      { id: '1', candidate: 'Jane Doe', time: 'Tomorrow at 10:00 AM', status: 'CONFIRMED' }
-    ],
-    draftJobs: [
-      { id: 'd1', title: 'Senior ML Engineer', savedAt: '2 days ago' }
-    ]
+    savedCandidates: [],
+    upcomingInterviews: [],
+    draftJobs: [],
+    stats: {
+      totalSpent: 0,
+      avgAcquisitionTime: 0,
+      acceptanceDelta: 0,
+      activeResourceCount: 0,
+      openRequirementsCount: 0
+    }
   });
   const [fetching, setFetching] = useState(true);
   const [profile, setProfile] = useState<any>(null);
@@ -68,19 +68,26 @@ const EmployerDashboard = () => {
   const fetchDashboardData = async () => {
     setFetching(true);
     try {
-      const [jobsRes, contractsRes, invoicesRes, engineersRes, profileRes] = await Promise.all([
+      const [jobsRes, contractsRes, invoicesRes, engineersRes, profileRes, statsRes, savedRes, interviewsRes] = await Promise.all([
         api.get('/jobs/my-jobs'),
         api.get('/contracts'),
         api.get('/payments/invoices'),
         api.get('/engineers'),
-        api.get('/employer/profile')
+        api.get('/employers/profile'),
+        api.get('/employers/stats'),
+        api.get('/employers/saved-candidates'),
+        api.get('/employers/interviews')
       ]);
       setData((prev: any) => ({
         ...prev,
         jobs: jobsRes.data || [],
         contracts: contractsRes.data || [],
         invoices: invoicesRes.data || [],
-        featuredEngineers: (engineersRes.data || []).filter((e: any) => e.isFeatured).slice(0, 4)
+        featuredEngineers: (engineersRes.data || []).filter((e: any) => e.isFeatured).slice(0, 4),
+        stats: statsRes.data,
+        savedCandidates: savedRes.data || [],
+        upcomingInterviews: interviewsRes.data || [],
+        draftJobs: (jobsRes.data || []).filter((j: any) => j.status === 'DRAFT')
       }));
       setProfile(profileRes.data);
     } catch (err) {
@@ -195,7 +202,7 @@ const EmployerDashboard = () => {
                 <div className="flex flex-wrap gap-4">
                     <div className="bg-[#E7E6E2]/50 px-8 py-4 rounded-2xl border border-[#32312D]/10 min-w-[200px]">
                         <div className="text-[8px] font-black text-[#3A3F5F]/60 uppercase tracking-[0.2em] mb-1">Monthly Resource Burn</div>
-                        <div className="text-2xl font-black text-[#3A3F5F]">${data.contracts.reduce((acc: number, c: any) => acc + (c.salary || 0), 0).toLocaleString()}</div>
+                        <div className="text-2xl font-black text-[#3A3F5F]">${data.stats?.totalSpent?.toLocaleString() || '0'}</div>
                     </div>
                     <Link href="/dashboard/employer/jobs/new" className="bg-[#3A3F5F] text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#3A3F5F]/90 shadow-lg shadow-[#3A3F5F]/20 transition-all flex items-center">
                         + Deploy Job Posting
@@ -203,14 +210,14 @@ const EmployerDashboard = () => {
                 </div>
             </div>
         </div>
-
+ 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
             {[
-                { label: 'Active Resources', value: data.contracts.length, icon: '💎', trend: 'Global' },
-                { label: 'Open Requirements', value: data.jobs.filter((j: any) => j.status === 'OPEN').length, icon: '📜', trend: 'Active' },
+                { label: 'Active Resources', value: data.stats?.activeResourceCount || 0, icon: '💎', trend: 'Global' },
+                { label: 'Open Requirements', value: data.stats?.openRequirementsCount || 0, icon: '📜', trend: 'Active' },
                 { label: 'Talent Interests', value: data.jobs.reduce((acc: number, j: any) => acc + (j.interests?.length || 0), 0), icon: '📡', trend: 'Incoming' },
-                { label: 'CapEx Invoiced', value: `$${data.invoices.reduce((acc: number, i: any) => acc + i.amount, 0).toLocaleString()}`, icon: '💰', trend: 'Secured' }
+                { label: 'CapEx Invoiced', value: `$${data.stats?.totalSpent?.toLocaleString() || '0'}`, icon: '💰', trend: 'Secured' }
             ].map((stat, i) => (
                 <div key={i} className="group relative p-8 rounded-[32px] bg-white border border-[#32312D]/5 hover:border-[#32312D]/20 transition-all duration-500 shadow-sm hover:shadow-md">
                     <div className="flex justify-between items-center mb-6">

@@ -8,7 +8,7 @@ interface AuthContextType {
   user: any;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, role: 'EMPLOYER' | 'ENGINEER') => Promise<void>;
+  signup: (email: string, password: string, role: 'EMPLOYER' | 'ENGINEER', additionalData?: any) => Promise<void>;
   registerEmployer: (data: any) => Promise<void>;
   logout: () => void;
 }
@@ -51,9 +51,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     else if (data.role === 'ENGINEER') router.push('/dashboard/engineer');
   };
 
-  const signup = async (email: string, password: string, role: 'EMPLOYER' | 'ENGINEER') => {
+  const signup = async (email: string, password: string, role: 'EMPLOYER' | 'ENGINEER', additionalData?: any) => {
     const endpoint = role === 'EMPLOYER' ? '/auth/register/employer' : '/auth/register/engineer';
-    const { data } = await api.post(endpoint, { email, password });
+    const { data } = await api.post(endpoint, { email, password, ...additionalData });
     localStorage.setItem('token', data.token);
     setUser(data);
   };

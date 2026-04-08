@@ -747,6 +747,10 @@ const AdminDashboard = () => {
                                           <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-2 text-left">Compliance Node</div>
                                           <div className={`text-lg font-black ${viewingEmployer.isApproved ? 'text-emerald-600' : 'text-orange-400'} text-left`}>{viewingEmployer.isApproved ? 'AUTHORIZED' : 'PENDING'}</div>
                                       </div>
+                                      <div className="text-left col-span-2">
+                                          <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-2 text-left">Business Registration</div>
+                                          <div className="text-lg font-black text-[#32312D] text-left uppercase tracking-tighter">{viewingEmployer.businessRegNumber || 'NOT PROVIDED'}</div>
+                                      </div>
                                   </div>
                               </div>
                           </div>

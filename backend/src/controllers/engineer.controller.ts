@@ -231,3 +231,95 @@ export const getEngineerById = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const getEngineerStats = async (req: AuthRequest, res: Response) => {
+    try {
+        const engineer = await prisma.engineerProfile.findUnique({
+            where: { userId: req.user.id },
+            include: { contracts: true }
+        });
+
+        if (!engineer) return res.status(404).json({ message: 'Engineer profile not found' });
+
+        const invoices = await prisma.invoice.findMany({
+            where: { contract: { engineerId: engineer.id }, status: 'PAID' }
+        });
+
+        const totalEarned = invoices.reduce((acc, inv) => acc + inv.amount, 0);
+        const activeProjectCount = engineer.contracts.filter(c => c.status === 'ACTIVE').length;
+
+        res.json({
+            totalEarned,
+            activeProjectCount,
+            nextGoal: 50000, // Still a bit hardcoded but could be dynamic
+        });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getSuggestedJobs = async (req: AuthRequest, res: Response) => {
+    try {
+        const engineer = await prisma.engineerProfile.findUnique({
+            where: { userId: req.user.id }
+        });
+        if (!engineer) return res.status(404).json({ message: 'Engineer not found' });
+
+        const skills = (engineer.skills || '').split(',').map(s => s.trim().toLowerCase());
+        
+        const jobs = await prisma.job.findMany({
+            where: { status: 'OPEN' },
+            take: 10
+        });
+
+        // Simple scoring
+        const suggested = jobs.map(job => {
+            const jobSkills = job.requiredSkills.split(',').map(s => s.trim().toLowerCase());
+            const matchCount = skills.filter(s => jobSkills.includes(s)).length;
+            return { ...job, matchCount };
+        }).sort((a, b) => b.matchCount - a.matchCount).slice(0, 3);
+
+        res.json(suggested);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getTimesheets = async (req: AuthRequest, res: Response) => {
+    try {
+        const engineer = await prisma.engineerProfile.findUnique({
+            where: { userId: req.user.id }
+        });
+        if (!engineer) return res.status(404).json({ message: 'Engineer not found' });
+
+        const timesheets = await prisma.timesheet.findMany({
+            where: { contract: { engineerId: engineer.id } },
+            include: { contract: { include: { employer: true } } },
+            orderBy: { date: 'desc' }
+        });
+
+        res.json(timesheets);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getEndorsements = async (req: AuthRequest, res: Response) => {
+    try {
+        const engineer = await prisma.engineerProfile.findUnique({
+            where: { userId: req.user.id }
+        });
+        if (!engineer) return res.status(404).json({ message: 'Engineer not found' });
+
+        const endorsements = await prisma.endorsement.findMany({
+            where: { engineerId: engineer.id },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json(endorsements);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+

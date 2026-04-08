@@ -92,17 +92,10 @@ const EngineerDashboard = () => {
   const [data, setData] = useState<any>({
     contracts: [],
     invoices: [],
-    suggestedJobs: [
-      { id: '1', title: 'Senior AI Engineer', company: 'Verified Client', budget: '$150/hr' },
-      { id: '2', title: 'LLM Fine-tuning Expert', company: 'Verified Client', budget: '$200/hr' }
-    ],
-    endorsements: [
-      { id: '1', from: 'Verified Partner', company: 'Platform Client', text: 'Exceptional work on the Llama integration.' }
-    ],
-    milestones: { totalEarned: 45000, nextGoal: 50000 },
-    timesheets: [
-      { id: '1', date: '2023-11-20', hours: 8, contract: 'Verified Client', status: 'APPROVED' }
-    ]
+    suggestedJobs: [],
+    endorsements: [],
+    stats: { totalEarned: 0, activeProjectCount: 0, nextGoal: 50000 },
+    timesheets: []
   });
   const [fetching, setFetching] = useState(true);
   
@@ -145,15 +138,23 @@ const EngineerDashboard = () => {
   const fetchDashboardData = async () => {
     setFetching(true);
     try {
-      const [contractsRes, invoicesRes, profileRes] = await Promise.all([
+      const [contractsRes, invoicesRes, profileRes, statsRes, suggestedRes, timesheetsRes, endorsementsRes] = await Promise.all([
         api.get('/contracts'),
         api.get('/payments/invoices'),
-        api.get('/engineers/profile')
+        api.get('/engineers/profile'),
+        api.get('/engineers/stats'),
+        api.get('/engineers/suggested-jobs'),
+        api.get('/engineers/timesheets'),
+        api.get('/engineers/endorsements')
       ]);
       setData((prev: any) => ({
         ...prev,
         contracts: contractsRes.data || [],
-        invoices: invoicesRes.data || []
+        invoices: invoicesRes.data || [],
+        stats: statsRes.data,
+        suggestedJobs: suggestedRes.data || [],
+        timesheets: timesheetsRes.data || [],
+        endorsements: endorsementsRes.data || []
       }));
       setProfile(profileRes.data);
     } catch (err) {
@@ -450,7 +451,7 @@ const EngineerDashboard = () => {
                                             <div className="w-20 h-20 rounded-3xl bg-[#3A3F5F]/5 border border-[#3A3F5F]/10 flex items-center justify-center text-3xl grayscale opacity-50">🏢</div>
                                             <div>
                                                 <div className="text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-2">Platform Client</div>
-                                                <h3 className="text-2xl font-black text-[#32312D] tracking-tight mb-2 uppercase">Verified Employer</h3>
+                                                <h3 className="text-2xl font-black text-[#32312D] tracking-tight mb-2 uppercase">{interest.employer.companyName}</h3>
                                                 <div className="text-sm font-bold text-[#32312D]/40 flex items-center gap-2">
                                                     Target Job: <span className="text-[#32312D]">{interest.job.title}</span>
                                                 </div>

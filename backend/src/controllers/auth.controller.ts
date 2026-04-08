@@ -15,7 +15,7 @@ const generateToken = (id: string) => {
 
 export const registerEmployer = async (req: Request, res: Response) => {
   try {
-    const { email, password, companyName, website, size, industry, description, location } = req.body;
+    const { email, password, companyName, website, size, industry, description, location, businessRegNumber } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Please provide both email and password' });
@@ -42,6 +42,7 @@ export const registerEmployer = async (req: Request, res: Response) => {
             industry,
             description,
             location,
+            businessRegNumber,
           }
         },
         activity_logs: {
