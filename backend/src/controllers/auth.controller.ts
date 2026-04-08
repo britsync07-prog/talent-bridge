@@ -27,7 +27,7 @@ export const registerEmployer = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 8);
 
     const user = await prisma.user.create({
       data: {
@@ -97,7 +97,7 @@ export const registerEngineer = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 8);
 
     const hRate = parseFloat(hourlyRate) || 0;
     const mSalary = parseFloat(monthlySalaryExpectation) || (hRate * 160); // Default to 160 hours/month
@@ -177,15 +177,7 @@ export const login = async (req: Request, res: Response) => {
     console.log(`Password match: ${isMatch}`);
 
     if (isMatch) {
-      // Create activity log
-      await prisma.activity_log.create({
-        data: {
-          userId: user.id,
-          action: 'user login',
-          details: `User logged in with role: ${user.role}`
-        }
-      });
-
+      // Respond immediately — log asynchronously so it doesn't block
       res.json({
         id: user.id,
         email: user.email,
@@ -193,6 +185,15 @@ export const login = async (req: Request, res: Response) => {
         profile: user.adminProfile || user.employerProfile || user.engineerProfile,
         token: generateToken(user.id),
       });
+
+      // Fire-and-forget: do not await
+      prisma.activity_log.create({
+        data: {
+          userId: user.id,
+          action: 'user login',
+          details: `User logged in with role: ${user.role}`
+        }
+      }).catch(err => console.error('Activity log error:', err));
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
     }

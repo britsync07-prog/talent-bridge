@@ -23,9 +23,9 @@ starteup add , investor....
 admin will get the employers intrests. DONE
 employer have to give busniss cirtficate.
 employer also can do meeting. DONE
-remove job section
-video upload limit
-task - remove ai estimator
+remove job section DONE
+video upload limit DONE
+task - remove ai estimator DONE
 remove the up bar from dashboard DONE
 corporete- compny regstration number
 message asset remove.

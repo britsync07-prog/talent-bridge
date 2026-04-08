@@ -227,11 +227,12 @@ export const getStats = async (req: Request, res: Response) => {
       prisma.contract.count({ where: { status: 'ACTIVE' } })
     ]);
 
-    const paidInvoices = await prisma.invoice.findMany({
+    const revenueAgg = await prisma.invoice.aggregate({
+      _sum: { amount: true },
       where: { status: 'PAID' }
     });
 
-    const totalRevenue = paidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+    const totalRevenue = revenueAgg._sum.amount ?? 0;
 
     res.json({
       totalEngineers: engineersCount,

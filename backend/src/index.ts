@@ -71,6 +71,11 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// Health check (registered first to avoid interception)
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', message: 'API is alive' });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/engineers', engineerRoutes);
@@ -80,10 +85,6 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/contracts', contractRoutes);
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'API is alive' });
-});
 
 app.get('/', (req, res) => {
   res.send('Remote AI Workforce Platform API');
