@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api, { getFileUrl } from '@/lib/api';
+import LogoutButton from '@/components/LogoutButton';
 
 const FileUploadZone = ({ id, label, accept, icon, onFileSelect, currentFile, maxSize }: any) => {
   const [dragActive, setDragActive] = useState(false);
@@ -329,6 +330,7 @@ const EngineerDashboard = () => {
                                 </div>
                             </div>
                         </div>
+                        <LogoutButton />
                     </div>
                 )}
             </div>
@@ -395,7 +397,7 @@ const EngineerDashboard = () => {
                                             <div className="w-20 h-20 rounded-3xl bg-[#3A3F5F]/5 border border-[#3A3F5F]/10 flex items-center justify-center text-3xl grayscale opacity-50">🏢</div>
                                             <div>
                                                 <div className="text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-2">Corporate Node</div>
-                                                <h3 className="text-2xl font-black text-[#32312D] tracking-tight mb-2 uppercase">Verified Client</h3>
+                                                <h3 className="text-2xl font-black text-[#32312D] tracking-tight mb-2 uppercase">{contract.employer.companyName}</h3>
                                                 <div className="text-sm font-bold text-[#32312D]/40 flex items-center gap-2">
                                                     Allocation: <span className="text-[#32312D]">${contract.salary.toLocaleString()}</span>
                                                 </div>
@@ -515,7 +517,7 @@ const EngineerDashboard = () => {
                                                     🏢
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <div className="font-black text-[#32312D] text-xs uppercase tracking-tight truncate">Verified Client</div>
+                                                    <div className="font-black text-[#32312D] text-xs uppercase tracking-tight truncate">{contract.employer.companyName}</div>
                                                     <div className={`text-[8px] font-black uppercase tracking-widest mt-0.5 ${contract.status === 'ACTIVE' ? 'text-emerald-500' : 'text-[#32312D]/30'}`}>{contract.status}</div>
                                                 </div>
                                             </button>
@@ -537,7 +539,7 @@ const EngineerDashboard = () => {
                                                     🏢
                                                 </div>
                                                 <div>
-                                                    <div className="font-black text-[#32312D] uppercase text-sm tracking-tight">Verified Client</div>
+                                                    <div className="font-black text-[#32312D] uppercase text-sm tracking-tight">{wsEmployer?.companyName}</div>
                                                     <div className="text-[8px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span> Active Channel
                                                     </div>

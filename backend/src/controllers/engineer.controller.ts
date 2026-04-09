@@ -74,9 +74,10 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 };
 
 
-export const matchEngineers = async (req: Request, res: Response) => {
+export const matchEngineers = async (req: AuthRequest, res: Response) => {
   try {
     const { requiredSkills, maxBudget } = req.query;
+    const isAdmin = req.user?.role === 'ADMIN';
 
     if (!requiredSkills) {
       return res.status(400).json({ message: 'requiredSkills parameter is missing' });
@@ -123,7 +124,7 @@ export const matchEngineers = async (req: Request, res: Response) => {
         country: engineer.country,
         skills: engineer.skills,
         yearsExperience: engineer.yearsExperience,
-        hourlyRate: engineer.hourlyRate,
+        ...(isAdmin && { hourlyRate: engineer.hourlyRate }),
         aiSpecializations: engineer.aiSpecializations,
         availabilityStatus: engineer.availabilityStatus,
         videoUrl: engineer.videoUrl,
@@ -150,9 +151,10 @@ export const matchEngineers = async (req: Request, res: Response) => {
   }
 };
 
-export const getEngineers = async (req: Request, res: Response) => {
+export const getEngineers = async (req: AuthRequest, res: Response) => {
   try {
     const { specialization, country, minRate, maxRate } = req.query;
+    const isAdmin = req.user?.role === 'ADMIN';
 
     let where: any = { isActive: true, isApproved: true };
 
@@ -179,11 +181,11 @@ export const getEngineers = async (req: Request, res: Response) => {
         country: true,
         skills: true,
         yearsExperience: true,
-        hourlyRate: true,
         aiSpecializations: true,
         availabilityStatus: true,
         videoUrl: true,
-        isFeatured: true, // Use assertion or wait for db generation
+        isFeatured: true,
+        ...(isAdmin && { hourlyRate: true }),
       } as any,
       orderBy: [
           { isFeatured: 'desc' }, // Need any bypass if TS fails
@@ -197,9 +199,10 @@ export const getEngineers = async (req: Request, res: Response) => {
   }
 };
 
-export const getEngineerById = async (req: Request, res: Response) => {
+export const getEngineerById = async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
+    const isAdmin = req.user?.role === 'ADMIN';
 
     const engineer = await prisma.engineerProfile.findUnique({
       where: { id },
@@ -217,7 +220,10 @@ export const getEngineerById = async (req: Request, res: Response) => {
         country: engineer.country,
         skills: engineer.skills,
         yearsExperience: engineer.yearsExperience,
-        hourlyRate: engineer.hourlyRate,
+        ...(isAdmin && { 
+          hourlyRate: engineer.hourlyRate,
+          monthlySalaryExpectation: engineer.monthlySalaryExpectation 
+        }),
         aiSpecializations: engineer.aiSpecializations,
         availabilityStatus: engineer.availabilityStatus,
         videoUrl: engineer.videoUrl,

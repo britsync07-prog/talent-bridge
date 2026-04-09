@@ -94,10 +94,14 @@ const EngineersPage = () => {
                     </div>
 
                     <div className="pt-8 border-t border-[#32312D]/10 flex justify-between items-center">
-                        <div>
-                            <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Standard Rate</div>
-                            <div className="text-xl font-black text-[#32312D]">${eng.hourlyRate}<span className="text-xs text-slate-400">/hr</span></div>
-                        </div>
+                        {eng.hourlyRate > 0 ? (
+                          <div>
+                              <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Standard Rate</div>
+                              <div className="text-xl font-black text-[#32312D]">${eng.hourlyRate}<span className="text-xs text-slate-400">/hr</span></div>
+                          </div>
+                        ) : (
+                          <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Rate: Restricted</div>
+                        )}
                         <div className="text-[#3A3F5F] font-black text-[10px] uppercase tracking-widest group-hover:underline underline-offset-8">Audit Profile →</div>
                     </div>
                   </div>

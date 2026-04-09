@@ -96,10 +96,12 @@ export default function EngineerProfilePage() {
                   </div>
               </div>
               <div className="flex gap-4 mb-2">
-                  <div className="text-right px-8 border-r border-[#32312D]/10">
-                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Market Rate</div>
-                      <div className="text-3xl font-black text-[#3A3F5F]">${engineer.hourlyRate}/hr</div>
-                  </div>
+                  {engineer.hourlyRate > 0 && (
+                    <div className="text-right px-8 border-r border-[#32312D]/10">
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Market Rate</div>
+                        <div className="text-3xl font-black text-[#3A3F5F]">${engineer.hourlyRate}/hr</div>
+                    </div>
+                  )}
                   <div className="text-right px-8">
                       <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</div>
                       <div className="text-3xl font-black text-emerald-500 uppercase tracking-tighter">{engineer.availabilityStatus}</div>

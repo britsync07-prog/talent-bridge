@@ -117,10 +117,10 @@ export const getAllEngineers = async (req: Request, res: Response) => {
 export const approveEngineer = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
-    const { isApproved } = req.body;
+    const { isApproved, disapprovalReason } = req.body;
 
     // When admin toggles isApproved directly, we should update approvalStatus accordingly
-    const data: any = { isApproved };
+    const data: any = { isApproved, disapprovalReason: disapprovalReason || null };
     if (isApproved) {
       data.approvalStatus = 'FULLY_APPROVED';
     } else {
@@ -205,11 +205,11 @@ export const getAllEmployers = async (req: Request, res: Response) => {
 export const approveEmployer = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
-    const { isApproved } = req.body;
+    const { isApproved, disapprovalReason } = req.body;
 
     const employer = await prisma.employerProfile.update({
       where: { id },
-      data: { isApproved }
+      data: { isApproved, disapprovalReason: disapprovalReason || null }
     });
 
     res.json(employer);
@@ -317,6 +317,68 @@ export const deleteInterest = async (req: Request, res: Response) => {
       where: { id }
     });
     res.json({ message: 'Interest deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getSystemConfig = async (req: Request, res: Response) => {
+  try {
+    const config = await prisma.systemConfig.findMany();
+    res.json(config);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateSystemConfig = async (req: Request, res: Response) => {
+  try {
+    const { key, value } = req.body;
+    const config = await prisma.systemConfig.upsert({
+      where: { key },
+      update: { value },
+      create: { key, value }
+    });
+    res.json(config);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getAllJobsForAdmin = async (req: Request, res: Response) => {
+  try {
+    const jobs = await prisma.job.findMany({
+      include: { employer: true },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(jobs);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const approveJob = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const job = await prisma.job.update({
+      where: { id },
+      data: { status: 'OPEN', disapprovalReason: null }
+    });
+    res.json(job);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const disapproveJob = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const { reason } = req.body;
+    const job = await prisma.job.update({
+      where: { id },
+      data: { status: 'DISAPPROVED', disapprovalReason: reason }
+    });
+    res.json(job);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

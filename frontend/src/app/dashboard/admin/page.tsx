@@ -4,11 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import api, { getFileUrl } from '@/lib/api';
+import LogoutButton from '@/components/LogoutButton';
 
 const AdminDashboard = () => {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'stats' | 'engineers' | 'employers' | 'logs' | 'interests' | 'health' | 'disputes' | 'waitlist' | 'settings'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'engineers' | 'employers' | 'logs' | 'interests' | 'health' | 'disputes' | 'waitlist' | 'settings' | 'jobs'>('stats');
   const [stats, setStats] = useState({
     totalEngineers: 0,
     totalEmployers: 0,
@@ -23,6 +24,7 @@ const AdminDashboard = () => {
   const [employers, setEmployers] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [interests, setInterests] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<any[]>([]);
   const [fetching, setFetching] = useState(false);
   const [onboardingItem, setOnboardingItem] = useState<any | null>(null);
   const [showBroadcastModal, setShowBroadcastModal] = useState(false);
@@ -34,6 +36,7 @@ const AdminDashboard = () => {
 
   const [viewingEngineer, setViewingEngineer] = useState<any | null>(null);
   const [viewingEmployer, setViewingEmployer] = useState<any | null>(null);
+  const [protocolFee, setProtocolFee] = useState('10');
 
   const fetchData = async () => {
     setFetching(true);
@@ -96,6 +99,13 @@ const AdminDashboard = () => {
       } else if (activeTab === 'interests') {
         const { data } = await api.get('/admin/interests');
         setInterests(data || []);
+      } else if (activeTab === 'settings') {
+        const { data } = await api.get('/admin/config');
+        const fee = data.find((c: any) => c.key === 'protocol_fee');
+        if (fee) setProtocolFee(fee.value);
+      } else if (activeTab === 'jobs') {
+        const { data } = await api.get('/admin/jobs');
+        setJobs(data || []);
       }
     } catch (error: any) {
       console.error('Error fetching admin data:', error.response?.data || error.message);
@@ -117,10 +127,15 @@ const AdminDashboard = () => {
 
   const handleUpdateEngineerStatus = async (id: string, approvalStatus: string) => {
     try {
-      await api.patch(`/admin/engineers/${id}/status`, { approvalStatus });
+      let disapprovalReason = null;
+      if (approvalStatus === 'REJECTED') {
+          disapprovalReason = prompt('Reason for rejection:');
+          if (!disapprovalReason) return;
+      }
+      await api.patch(`/admin/engineers/${id}/status`, { approvalStatus, disapprovalReason });
       fetchData();
       if (viewingEngineer?.id === id) {
-          setViewingEngineer((prev: any) => ({ ...prev, approvalStatus }));
+          setViewingEngineer((prev: any) => ({ ...prev, approvalStatus, disapprovalReason }));
       }
     } catch (error) {
       alert('Failed to update engineer status');
@@ -141,13 +156,40 @@ const AdminDashboard = () => {
 
   const handleApproveEmployer = async (id: string, isApproved: boolean) => {
     try {
-      await api.patch(`/admin/employers/${id}/approve`, { isApproved });
+      let disapprovalReason = null;
+      if (!isApproved) {
+        disapprovalReason = prompt('Reason for disapproval:');
+        if (!disapprovalReason) return;
+      }
+      await api.patch(`/admin/employers/${id}/approve`, { isApproved, disapprovalReason });
       fetchData();
       if (viewingEmployer?.id === id) {
-          setViewingEmployer((prev: any) => ({ ...prev, isApproved }));
+          setViewingEmployer((prev: any) => ({ ...prev, isApproved, disapprovalReason }));
       }
     } catch (error) {
       alert('Failed to update employer status');
+    }
+  };
+
+  const handleApproveJob = async (id: string) => {
+    try {
+      await api.patch(`/admin/jobs/${id}/approve`);
+      fetchData();
+      alert('Job Approved successfully');
+    } catch (error) {
+      alert('Failed to approve job');
+    }
+  };
+
+  const handleDisapproveJob = async (id: string) => {
+    try {
+      const reason = prompt('Reason for disapproval:');
+      if (!reason) return;
+      await api.patch(`/admin/jobs/${id}/disapprove`, { reason });
+      fetchData();
+      alert('Job Disapproved successfully');
+    } catch (error) {
+      alert('Failed to disapprove job');
     }
   };
 
@@ -209,6 +251,16 @@ const AdminDashboard = () => {
       }
   };
 
+  const handleSaveConfig = async (key: string, value: string) => {
+    try {
+        await api.patch('/admin/config', { key, value });
+        alert('Internal Protocol Overwritten.');
+        fetchData();
+    } catch (err) {
+        alert('Failed to update protocol');
+    }
+  };
+
   if (loading || !user || fetching) return (
     <div className="min-h-screen bg-[#E7E6E2] flex items-center justify-center text-[#32312D]">
       <div className="flex flex-col items-center gap-4">
@@ -248,6 +300,7 @@ const AdminDashboard = () => {
                         <div className="text-[8px] font-black text-[#3A3F5F] uppercase tracking-[0.2em] mb-1 text-left">Aggregate Marketplace GMV</div>
                         <div className="text-2xl font-black text-[#3A3F5F] text-left">${stats.totalRevenue.toLocaleString()}</div>
                     </div>
+                    <LogoutButton />
                 </div>
             </div>
         </div>
@@ -255,7 +308,7 @@ const AdminDashboard = () => {
         {/* Sidebar Nav + Content */}
         <div className="flex flex-col lg:flex-row gap-12">
             <aside className="w-full lg:w-64 space-y-2">
-                {['stats', 'interests', 'engineers', 'employers', 'disputes', 'waitlist', 'logs', 'health', 'settings'].map((tab) => (
+                {['stats', 'interests', 'jobs', 'engineers', 'employers', 'logs', 'settings'].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab as any)}
@@ -476,6 +529,9 @@ const AdminDashboard = () => {
                                                 <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${eng.approvalStatus === 'FULLY_APPROVED' ? 'bg-emerald-50 text-emerald-600' : 'bg-[#3A3F5F]/5 text-[#3A3F5F]'}`}>
                                                     {eng.approvalStatus || 'INITIALIZING'}
                                                 </span>
+                                                {eng.disapprovalReason && (
+                                                    <div className="text-[8px] text-red-500 mt-1 uppercase font-bold italic">{eng.disapprovalReason}</div>
+                                                )}
                                             </td>
                                             <td className="px-8 py-6">
                                                 <select 
@@ -533,6 +589,9 @@ const AdminDashboard = () => {
                                             <div className="text-left">
                                                 <div className="font-black text-[#32312D] text-lg tracking-tight uppercase line-clamp-1">{emp.companyName}</div>
                                                 <div className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest">{emp.location || 'Global Node'}</div>
+                                                {emp.disapprovalReason && (
+                                                    <div className="text-[8px] text-red-500 mt-1 uppercase font-bold italic line-clamp-1">{emp.disapprovalReason}</div>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="flex gap-3 mt-auto">
@@ -547,6 +606,80 @@ const AdminDashboard = () => {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'jobs' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8 text-left">
+                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Marketplace Job Queue</h2>
+                        <div className="bg-white rounded-[32px] border border-[#32312D]/10 overflow-hidden shadow-sm">
+                            <table className="w-full text-left text-[#32312D]">
+                                <thead className="bg-[#3A3F5F]/5 text-[10px] font-black text-[#32312D]/40 uppercase tracking-[0.2em]">
+                                    <tr>
+                                        <th className="px-8 py-6">Job Title</th>
+                                        <th className="px-8 py-6">Employer</th>
+                                        <th className="px-8 py-6">Budget</th>
+                                        <th className="px-8 py-6">Status</th>
+                                        <th className="px-8 py-6 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-[#32312D]/5">
+                                    {jobs.map(job => (
+                                        <tr key={job.id} className="hover:bg-[#3A3F5F]/5 transition-colors">
+                                            <td className="px-8 py-6">
+                                                <div className="font-black text-[#32312D] text-xs tracking-tight uppercase">{job.title}</div>
+                                                <div className="text-[10px] font-bold text-[#32312D]/40 mt-1 uppercase tracking-widest truncate max-w-md">{job.description}</div>
+                                            </td>
+                                            <td className="px-8 py-6 font-black text-[#32312D] text-[10px] uppercase tracking-tight">{job.employer?.companyName}</td>
+                                            <td className="px-8 py-6 font-black text-[#32312D] text-[10px] uppercase tracking-tight">${job.maxBudget}/HR</td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${
+                                                        job.status === 'PENDING' ? 'bg-orange-400 animate-pulse' :
+                                                        job.status === 'DISAPPROVED' ? 'bg-red-500' :
+                                                        'bg-emerald-500'
+                                                    }`}></span>
+                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${
+                                                        job.status === 'DISAPPROVED' ? 'text-red-500' : 'text-[#32312D]/40'
+                                                    }`}>{job.status}</span>
+                                                </div>
+                                                {job.disapprovalReason && (
+                                                    <div className="text-[8px] text-red-400 mt-1 uppercase font-bold italic">{job.disapprovalReason}</div>
+                                                )}
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                <div className="flex justify-end gap-3">
+                                                    {job.status === 'PENDING' && (
+                                                        <>
+                                                            <button 
+                                                                onClick={() => handleApproveJob(job.id)}
+                                                                className="bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-sm"
+                                                            >
+                                                                Approve
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleDisapproveJob(job.id)}
+                                                                className="bg-red-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-all shadow-sm"
+                                                            >
+                                                                Disapprove
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {job.status === 'DISAPPROVED' && (
+                                                        <button 
+                                                            onClick={() => handleApproveJob(job.id)}
+                                                            className="bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-sm"
+                                                        >
+                                                            Re-approve
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 )}
@@ -588,9 +721,19 @@ const AdminDashboard = () => {
                             <div className="space-y-8">
                                 <div className="space-y-3 text-left">
                                     <label className="block text-[10px] font-black text-[#32312D]/40 uppercase tracking-[0.3em]">Protocol Fee (%)</label>
-                                    <input type="number" defaultValue="15" className="w-full px-6 py-4 bg-[#E7E6E2]/30 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] uppercase text-xs" />
+                                    <input 
+                                        type="number" 
+                                        value={protocolFee} 
+                                        onChange={(e) => setProtocolFee(e.target.value)}
+                                        className="w-full px-6 py-4 bg-[#E7E6E2]/30 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] uppercase text-xs" 
+                                    />
                                 </div>
-                                <button className="w-full bg-[#3A3F5F] text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-lg shadow-[#3A3F5F]/20 hover:bg-[#32312D] transition-all">Overwrite Core Config</button>
+                                <button 
+                                    onClick={() => handleSaveConfig('protocol_fee', protocolFee)}
+                                    className="w-full bg-[#3A3F5F] text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-lg shadow-[#3A3F5F]/20 hover:bg-[#32312D] transition-all"
+                                >
+                                    Overwrite Core Config
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -155,19 +155,11 @@ export const getMyInvoices = async (req: AuthRequest, res: Response) => {
       });
     } else {
       const engineer = await prisma.engineerProfile.findUnique({ where: { userId: req.user.id } });
-      const rawInvoices = await prisma.invoice.findMany({
+      invoices = await prisma.invoice.findMany({
         where: { contract: { engineerId: engineer?.id } },
         include: { contract: { include: { employer: true } } },
         orderBy: { createdAt: 'desc' }
       });
-      // Redact employer info
-      invoices = rawInvoices.map(inv => ({
-          ...inv,
-          contract: {
-              ...inv.contract,
-              employer: inv.contract.employer ? { id: inv.contract.employer.id, companyName: 'Verified Client' } : null
-          }
-      }));
     }
 
     res.json(invoices);

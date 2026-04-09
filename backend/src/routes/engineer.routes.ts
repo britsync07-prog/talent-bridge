@@ -10,7 +10,7 @@ import {
   getTimesheets,
   getEndorsements
 } from '../controllers/engineer.controller';
-import { protect, engineer } from '../middleware/auth.middleware';
+import { protect, engineer, optionalProtect } from '../middleware/auth.middleware';
 import { upload } from '../utils/multer';
 
 const router: Router = Router();
@@ -27,8 +27,8 @@ router.patch('/profile', protect, engineer, upload.fields([
   { name: 'profilePic', maxCount: 1 }
 ]), updateProfile);
 
-router.get('/match', matchEngineers);
-router.get('/', getEngineers);
-router.get('/:id', getEngineerById);
+router.get('/match', optionalProtect, matchEngineers);
+router.get('/', optionalProtect, getEngineers);
+router.get('/:id', optionalProtect, getEngineerById);
 
 export default router;

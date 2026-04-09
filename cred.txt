@@ -1,5 +1,4 @@
 
-
 curl -X POST https://leadhunter-crm.work.gd:3001/api/meetings/create \
   -H "Content-Type: application/json" \
   -H "x-api-key: nexus_super_secret_key" \
@@ -13,7 +12,9 @@ crm form edit option..
 crm email pass.. error show
 
 
-leadhunter-- image , 3 days free trail no card requred, limit, card image, buttons, catagorized uncatagorizxed. ip-block. 100 lead  free only- smtp is not apparing, not even the saving working in dashboard.html, list of files
+leadhunter-- image , 3 days free trail no card requred, limit, card image, buttons, catagorized uncatagorizxed. ip-block. 100 lead  free only- smtp is not apparing, not even the saving working in dashboard.html, list of files.
+
+gmail add on lead hunter..
 
 https://i.ibb.co.com/DP9K6zxd/photo-6239932133963140892-w.jpg
 https://i.ibb.co.com/nsWvJpYT/photo-6239932133963140901-w.jpg
@@ -21,13 +22,12 @@ https://i.ibb.co.com/W4sGrZHC/photo-6239932133963140899-w.jpg
 
 starteup add , investor....
 admin will get the employers intrests. DONE
-employer have to give busniss cirtficate.
 employer also can do meeting. DONE
 remove job section DONE
 video upload limit DONE
 task - remove ai estimator DONE
 remove the up bar from dashboard DONE
-corporete- compny regstration number
+corporete- compny regstration number DONE
 message asset remove.
 job post go to admin
 remove smartmatch DONE
@@ -36,6 +36,7 @@ disputes for ticket of all
 wait list have jara kajer jonn bose ase
 chat frature for all
 70 pounds
+whitelist employer , logout, the employe hour only for admin, as many cirtifectas they want. video in profile. what should be in video. 
 workspace for empolyer DONE
 pordcast setup
 solutions hide DONE

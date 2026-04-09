@@ -13,7 +13,12 @@ import {
     updateInterestStatus,
     deleteInterest,
     createInterestMeeting,
-    createEngineerVerificationMeeting
+    createEngineerVerificationMeeting,
+    getSystemConfig,
+    updateSystemConfig,
+    getAllJobsForAdmin,
+    approveJob,
+    disapproveJob
 } from '../controllers/admin.controller';
 import { protect, admin } from '../middleware/auth.middleware';
 
@@ -27,6 +32,7 @@ router.get('/engineers', getAllEngineers);
 router.get('/employers', getAllEmployers);
 router.get('/contracts', getAllContracts);
 router.get('/interests', getAllInterests);
+router.get('/jobs', getAllJobsForAdmin);
 router.post('/interests/:id/meeting', createInterestMeeting);
 router.post('/engineers/:id/meeting', createEngineerVerificationMeeting);
 router.patch('/interests/:id/status', updateInterestStatus);
@@ -35,5 +41,10 @@ router.patch('/engineers/:id/approve', approveEngineer);
 router.patch('/engineers/:id/status', updateEngineerApprovalStatus);
 router.patch('/engineers/:id/feature', toggleEngineerFeature);
 router.patch('/employers/:id/approve', approveEmployer);
+router.patch('/jobs/:id/approve', approveJob);
+router.patch('/jobs/:id/disapprove', disapproveJob);
+
+router.get('/config', getSystemConfig);
+router.patch('/config', updateSystemConfig);
 
 export default router;

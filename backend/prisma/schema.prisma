@@ -55,6 +55,7 @@ model EmployerProfile {
   location     String?
   businessRegNumber String?
   isApproved   Boolean @default(false)
+  disapprovalReason String?
 
   jobs         Job[]
   contracts    Contract[]
@@ -85,6 +86,7 @@ model EngineerProfile {
   isActive                  Boolean  @default(true)
   isApproved                Boolean  @default(false)
   approvalStatus            String   @default("PENDING") // PENDING, ACCEPTED_FOR_INTERVIEW, INTERVIEW_COMPLETED, FULLY_APPROVED, REJECTED
+  disapprovalReason         String?
   isFeatured                Boolean  @default(false) // For curated "top talent" placement
   meetingId                 String?
   joinUrl                   String?
@@ -115,7 +117,8 @@ model Job {
   requiredSkills String
   maxBudget   Float
   duration    String
-  status      String    @default("OPEN") // OPEN, CLOSED, DRAFT
+  status      String    @default("PENDING") // PENDING, OPEN, CLOSED, DRAFT, DISAPPROVED
+  disapprovalReason String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -224,5 +227,12 @@ model Activity_log {
   action    String   // user login, job posted, engineer hired, contract signed, task updated, invoice generated, payment completed, interest shown
   details   String?
   createdAt DateTime @default(now())
+}
+
+model SystemConfig {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
 }
 

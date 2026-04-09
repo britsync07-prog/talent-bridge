@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/api';
+import LogoutButton from '@/components/LogoutButton';
 
 const EmployerDashboard = () => {
   const { user, loading } = useAuth();
@@ -207,6 +208,7 @@ const EmployerDashboard = () => {
                     <Link href="/dashboard/employer/jobs/new" className="bg-[#3A3F5F] text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#3A3F5F]/90 shadow-lg shadow-[#3A3F5F]/20 transition-all flex items-center">
                         + Deploy Job Posting
                     </Link>
+                    <LogoutButton />
                 </div>
             </div>
         </div>
@@ -248,7 +250,7 @@ const EmployerDashboard = () => {
                         👤
                       </div>
                       <div>
-                        <div className="font-black text-[#32312D] text-lg tracking-tight line-clamp-1 uppercase">Verified Engineer</div>
+                        <div className="font-black text-[#32312D] text-lg tracking-tight line-clamp-1 uppercase whitespace-nowrap overflow-hidden text-ellipsis">{eng.fullName}</div>
                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{eng.country}</div>
                       </div>
                     </div>
@@ -511,26 +513,26 @@ const EmployerDashboard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="bg-white p-10 rounded-[40px] border border-[#32312D]/5 shadow-sm">
                                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Avg Acquisition Time</div>
-                                <div className="text-5xl font-black text-[#32312D] tracking-tighter">12 <span className="text-lg text-slate-400">DAYS</span></div>
-                                <div className="mt-6 text-[10px] font-black text-[#3A3F5F] uppercase tracking-widest bg-[#E7E6E2] px-3 py-1.5 rounded-xl inline-block">↑ 15% VS LAST CYCLE</div>
+                                <div className="text-5xl font-black text-[#32312D] tracking-tighter">{data.stats?.avgAcquisitionTime || 0} <span className="text-lg text-slate-400">DAYS</span></div>
+                                <div className="mt-6 text-[10px] font-black text-[#3A3F5F] uppercase tracking-widest bg-[#E7E6E2] px-3 py-1.5 rounded-xl inline-block">SYSTEM OPTIMIZED</div>
                             </div>
                             <div className="bg-white p-10 rounded-[40px] border border-[#32312D]/5 shadow-sm">
                                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Acceptance Delta</div>
-                                <div className="text-5xl font-black text-[#3A3F5F] tracking-tighter">92%</div>
-                                <div className="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">INDUSTRY STD: 74%</div>
+                                <div className="text-5xl font-black text-[#3A3F5F] tracking-tighter">{Math.round(data.stats?.acceptanceDelta || 0)}%</div>
+                                <div className="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">REAL-TIME INDEX</div>
                             </div>
                             <div className="bg-white p-10 rounded-[40px] border border-[#32312D]/5 shadow-sm">
                                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">CPU Cost per Hire</div>
-                                <div className="text-5xl font-black text-[#32312D] tracking-tighter">$1.4k</div>
+                                <div className="text-5xl font-black text-[#32312D] tracking-tighter">${(data.stats?.costPerHire / 1000).toFixed(1)}k</div>
                                 <div className="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">EXCL PLATFORM TAX</div>
                             </div>
                         </div>
                         <div className="bg-white p-10 rounded-[40px] border border-[#32312D]/5 shadow-sm">
                             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 text-center">Talent Pipeline Throughput</div>
                             <div className="flex flex-col md:flex-row items-center gap-2 h-auto md:h-16">
-                               <div className="w-full md:flex-1 bg-[#3A3F5F] h-16 md:h-full rounded-2xl md:rounded-l-2xl md:rounded-r-none flex items-center justify-center text-[10px] font-black text-white uppercase shadow-lg shadow-[#3A3F5F]/20">Interests (100%)</div>
-                               <div className="w-full md:flex-[0.6] bg-slate-100 h-16 md:h-full flex items-center justify-center text-[10px] font-black text-slate-600 uppercase">Interviews (60%)</div>
-                               <div className="w-full md:flex-[0.2] bg-slate-200 h-16 md:h-full rounded-2xl md:rounded-r-2xl md:rounded-l-none flex items-center justify-center text-[10px] font-black text-slate-400 uppercase">Hired (20%)</div>
+                               <div className="w-full md:flex-1 bg-[#3A3F5F] h-16 md:h-full rounded-2xl md:rounded-l-2xl md:rounded-r-none flex items-center justify-center text-[10px] font-black text-white uppercase shadow-lg shadow-[#3A3F5F]/20">Interests ({data.stats?.pipeline?.interests || 0})</div>
+                               <div className="w-full md:flex-[0.6] bg-slate-100 h-16 md:h-full flex items-center justify-center text-[10px] font-black text-slate-600 uppercase">Interviews ({data.stats?.pipeline?.interviews || 0})</div>
+                               <div className="w-full md:flex-[0.2] bg-slate-200 h-16 md:h-full rounded-2xl md:rounded-r-2xl md:rounded-l-none flex items-center justify-center text-[10px] font-black text-slate-400 uppercase">Hired ({data.stats?.pipeline?.hired || 0})</div>
                             </div>
                         </div>
                     </div>
@@ -592,7 +594,7 @@ const EmployerDashboard = () => {
                                                     👤
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <div className="font-black text-[#32312D] text-xs uppercase tracking-tight truncate">Resource {contract.id.slice(0, 8).toUpperCase()}</div>
+                                                    <div className="font-black text-[#32312D] text-xs uppercase tracking-tight truncate">{contract.engineer?.fullName || 'Anonymous Node'}</div>
                                                     <div className={`text-[8px] font-black uppercase tracking-widest mt-0.5 ${contract.status === 'ACTIVE' ? 'text-emerald-500' : 'text-[#32312D]/30'}`}>{contract.status}</div>
                                                 </div>
                                             </button>
@@ -615,7 +617,7 @@ const EmployerDashboard = () => {
                                                     👤
                                                 </div>
                                                 <div>
-                                                    <div className="font-black text-[#32312D] uppercase text-sm tracking-tight">Platform Engineer</div>
+                                                    <div className="font-black text-[#32312D] uppercase text-sm tracking-tight">{selectedEngineer?.fullName || 'Platform Engineer'}</div>
                                                     <div className="text-[8px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span> Active Channel
                                                     </div>

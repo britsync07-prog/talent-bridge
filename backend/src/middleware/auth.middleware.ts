@@ -35,6 +35,27 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
   }
 };
 
+export const optionalProtect = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  let token;
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+      const decoded: any = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+
+      req.user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: { id: true, email: true, role: true }
+      });
+    } catch (error: any) {
+      console.error('Optional auth failed:', error.message);
+      // Continue without req.user
+    }
+  }
+  
+  next();
+};
+
 export const admin = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (req.user && req.user.role === 'ADMIN') {
     next();

@@ -23,6 +23,7 @@ export const createJob = async (req: AuthRequest, res: Response) => {
         requiredSkills,
         maxBudget: parseFloat(maxBudget),
         duration,
+        status: 'PENDING'
       }
     });
 
