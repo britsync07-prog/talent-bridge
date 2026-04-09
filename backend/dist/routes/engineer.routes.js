@@ -6,13 +6,18 @@ const auth_middleware_1 = require("../middleware/auth.middleware");
 const multer_1 = require("../utils/multer");
 const router = (0, express_1.Router)();
 router.get('/profile', auth_middleware_1.protect, auth_middleware_1.engineer, engineer_controller_1.getProfile);
+router.get('/stats', auth_middleware_1.protect, auth_middleware_1.engineer, engineer_controller_1.getEngineerStats);
+router.get('/suggested-jobs', auth_middleware_1.protect, auth_middleware_1.engineer, engineer_controller_1.getSuggestedJobs);
+router.get('/timesheets', auth_middleware_1.protect, auth_middleware_1.engineer, engineer_controller_1.getTimesheets);
+router.get('/endorsements', auth_middleware_1.protect, auth_middleware_1.engineer, engineer_controller_1.getEndorsements);
 router.patch('/profile', auth_middleware_1.protect, auth_middleware_1.engineer, multer_1.upload.fields([
     { name: 'resume', maxCount: 1 },
     { name: 'video', maxCount: 1 },
-    { name: 'certifications', maxCount: 1 },
+    { name: 'certifications', maxCount: 15 },
     { name: 'profilePic', maxCount: 1 }
 ]), engineer_controller_1.updateProfile);
-router.get('/match', engineer_controller_1.matchEngineers);
-router.get('/', engineer_controller_1.getEngineers);
-router.get('/:id', engineer_controller_1.getEngineerById);
+router.delete('/certificates/:id', auth_middleware_1.protect, auth_middleware_1.engineer, engineer_controller_1.deleteCertificate);
+router.get('/match', auth_middleware_1.optionalProtect, engineer_controller_1.matchEngineers);
+router.get('/', auth_middleware_1.optionalProtect, engineer_controller_1.getEngineers);
+router.get('/:id', auth_middleware_1.optionalProtect, engineer_controller_1.getEngineerById);
 exports.default = router;

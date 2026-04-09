@@ -23,6 +23,7 @@ const createJob = async (req, res) => {
                 requiredSkills,
                 maxBudget: parseFloat(maxBudget),
                 duration,
+                status: 'PENDING'
             }
         });
         // Activity Log
@@ -179,11 +180,15 @@ exports.scheduleCall = scheduleCall;
 // GET /api/jobs
 const getAllJobs = async (req, res) => {
     try {
-        const jobs = await prisma_1.default.job.findMany({
+        const rawJobs = await prisma_1.default.job.findMany({
             where: { status: 'OPEN' },
             include: { employer: true },
             orderBy: { createdAt: 'desc' }
         });
+        const jobs = rawJobs.map(j => ({
+            ...j,
+            employer: j.employer ? { id: j.employer.id, companyName: 'Verified Client' } : null
+        }));
         res.json(jobs);
     }
     catch (error) {
@@ -227,6 +232,9 @@ const getJobById = async (req, res) => {
         if (!job) {
             return res.status(404).json({ message: 'Job not found' });
         }
+        if (job.employer) {
+            job.employer = { id: job.employer.id, companyName: 'Verified Client' };
+        }
         res.json(job);
     }
     catch (error) {
@@ -242,6 +250,13 @@ const hireEngineer = async (req, res) => {
             return res.status(403).json({ message: 'Only Admin can onboard after call' });
         }
         const { employerId, engineerId, salary, type, platformFee } = req.body;
+        // Check if contract already exists
+        const existingContract = await prisma_1.default.contract.findFirst({
+            where: { employerId, engineerId, status: { in: ['PENDING', 'ACTIVE'] } }
+        });
+        if (existingContract) {
+            return res.status(400).json({ message: 'A contract already exists for this engagement' });
+        }
         const contract = await prisma_1.default.contract.create({
             data: {
                 employerId,

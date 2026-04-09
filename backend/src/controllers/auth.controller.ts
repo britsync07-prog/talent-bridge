@@ -84,8 +84,7 @@ export const registerEngineer = async (req: Request, res: Response) => {
       portfolioWebsite,
       github,
       linkedin,
-      resumeUrl,
-      certifications
+      resumeUrl
     } = req.body;
 
     if (!email || !password) {
@@ -122,7 +121,6 @@ export const registerEngineer = async (req: Request, res: Response) => {
             github,
             linkedin,
             resumeUrl,
-            certifications,
             isApproved: false, // Must be approved by admin
           }
         },

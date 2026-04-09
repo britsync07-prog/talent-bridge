@@ -82,7 +82,8 @@ model EngineerProfile {
   languages                 String?   
   availabilityStatus        String   @default("Available")
   resumeUrl                 String?
-  certifications            String?  
+  certifications            String?
+  isProfileComplete         Boolean  @default(false)
   isActive                  Boolean  @default(true)
   isApproved                Boolean  @default(false)
   approvalStatus            String   @default("PENDING") // PENDING, ACCEPTED_FOR_INTERVIEW, INTERVIEW_COMPLETED, FULLY_APPROVED, REJECTED
@@ -95,6 +96,16 @@ model EngineerProfile {
   interests                 Interest[]
   savedBy                   SavedCandidate[]
   endorsements              Endorsement[]
+  certificates              Certificate[]
+}
+
+model Certificate {
+  id          String          @id @default(uuid())
+  engineerId  String
+  engineer    EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
+  url         String
+  name        String?
+  createdAt   DateTime        @default(now())
 }
 
 model SavedCandidate {

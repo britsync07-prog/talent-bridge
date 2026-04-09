@@ -1,7 +1,12 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 export declare const getProfile: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
-export declare const updateProfile: (req: AuthRequest, res: Response) => Promise<void>;
-export declare const matchEngineers: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
-export declare const getEngineers: (req: Request, res: Response) => Promise<void>;
-export declare const getEngineerById: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const updateProfile: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const deleteCertificate: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const matchEngineers: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getEngineers: (req: AuthRequest, res: Response) => Promise<void>;
+export declare const getEngineerById: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getEngineerStats: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getSuggestedJobs: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getTimesheets: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getEndorsements: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;

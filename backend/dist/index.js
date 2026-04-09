@@ -8,9 +8,9 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const http_1 = __importDefault(require("http"));
 const helmet_1 = __importDefault(require("helmet"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
-const path_1 = __importDefault(require("path"));
 const cors_1 = __importDefault(require("cors"));
 const morgan_1 = __importDefault(require("morgan"));
+const prisma_1 = __importDefault(require("./lib/prisma"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const engineer_routes_1 = __importDefault(require("./routes/engineer.routes"));
 const employer_routes_1 = __importDefault(require("./routes/employer.routes"));
@@ -36,14 +36,10 @@ const allowedOrigins = [
     'https://www.talentbridge.it.com',
     'http://www.talentbridge.it.com',
 ].filter(Boolean);
-// CORS: never throw on disallowed origins (that can become a 500 behind proxies).
-// Instead, omit CORS headers so the browser blocks the request cleanly.
 const corsOptions = {
     origin: (origin, cb) => {
-        // Allow server-to-server / curl (no Origin header).
         if (!origin)
             return cb(null, true);
-        // In non-production, allow all origins for easier local dev.
         if (process.env.NODE_ENV !== 'production')
             return cb(null, true);
         return cb(null, allowedOrigins.includes(origin));
@@ -54,25 +50,26 @@ const corsOptions = {
     optionsSuccessStatus: 204,
     maxAge: 86400,
 };
-// 1. CORS Middleware (Top Priority)
 app.use((0, cors_1.default)(corsOptions));
-// Request Logging
 app.use((0, morgan_1.default)('dev'));
-// 2. Security Middleware (with relaxed CSP)
 app.use((0, helmet_1.default)({
     crossOriginResourcePolicy: false,
-    contentSecurityPolicy: false, // Disable for now to rule out interference
+    contentSecurityPolicy: false,
 }));
+// Special case for Stripe webhooks - MUST come before express.json()
+app.use('/api/payments/webhook', express_1.default.raw({ type: 'application/json' }));
 app.use(express_1.default.json({ limit: '100mb' }));
 app.use(express_1.default.urlencoded({ limit: '100mb', extended: true }));
-// Serve Static Files
-app.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'uploads')));
 const limiter = (0, express_rate_limit_1.default)({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000, // Increased limit for development/active use
+    windowMs: 15 * 60 * 1000,
+    max: 1000,
     message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api/', limiter);
+// Health check (registered first to avoid interception)
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'OK', message: 'API is alive' });
+});
 // Routes
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/engineers', engineer_routes_1.default);
@@ -83,12 +80,31 @@ app.use('/api/payments', payment_routes_1.default);
 app.use('/api/tasks', task_routes_1.default);
 app.use('/api/contracts', contract_routes_1.default);
 app.get('/', (req, res) => {
-    console.log('Health check request received from Render');
     res.send('Remote AI Workforce Platform API');
 });
-const startServer = () => {
-    server.listen(Number(PORT), '0.0.0.0', () => {
-        console.log(`Server is running on port ${PORT} (0.0.0.0)`);
+// Final Error Handler
+app.use((err, req, res, next) => {
+    console.error('--- Global Exception ---');
+    console.error(err);
+    res.status(err.status || 500).json({
+        message: err.message || 'Internal Server Conflict',
+        error: process.env.NODE_ENV === 'production' ? {} : err
     });
+});
+const startServer = async () => {
+    try {
+        console.log('--- Startup Phase ---');
+        console.log(`Port: ${PORT}`);
+        console.log('Verifying Database Connection...');
+        await prisma_1.default.$connect();
+        console.log('Database Connection: OK');
+        server.listen(Number(PORT), '0.0.0.0', () => {
+            console.log(`Server successfully bound to 0.0.0.0:${PORT}`);
+        });
+    }
+    catch (error) {
+        console.error('FAILED TO START SERVER:', error);
+        process.exit(1);
+    }
 };
 startServer();

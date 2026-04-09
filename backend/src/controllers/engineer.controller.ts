@@ -13,7 +13,8 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
             employer: true,
             job: true
           }
-        }
+        },
+        certificates: true
       }
     });
 
@@ -35,14 +36,24 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       aiSpecializations, languages, availabilityStatus, portfolioWebsite 
     } = req.body;
 
+    // Get current profile
+    const currentProfile = await prisma.engineerProfile.findUnique({
+      where: { userId },
+      include: { certificates: true }
+    });
+
+    if (!currentProfile) {
+      return res.status(404).json({ message: 'Engineer profile not found' });
+    }
+
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     
     const updateData: any = {
       fullName,
       country,
       skills,
-      yearsExperience: parseInt(yearsExperience),
-      hourlyRate: parseFloat(hourlyRate),
+      yearsExperience: parseInt(yearsExperience) || 0,
+      hourlyRate: parseFloat(hourlyRate) || 0,
       aiSpecializations,
       languages,
       availabilityStatus,
@@ -52,22 +63,85 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     if (files?.resume) {
       updateData.resumeUrl = await uploadToR2(files.resume[0], 'engineers/resumes');
     }
-    if (files?.video) {
-      updateData.videoUrl = await uploadToR2(files.video[0], 'engineers/videos');
-    }
-    if (files?.certifications) {
-      updateData.certifications = await uploadToR2(files.certifications[0], 'engineers/certifications');
-    }
+    
+    let profilePicUrl = currentProfile.profilePic;
     if (files?.profilePic) {
-      updateData.profilePic = await uploadToR2(files.profilePic[0], 'engineers/profile-pics');
+      profilePicUrl = await uploadToR2(files.profilePic[0], 'engineers/profile-pics');
+      updateData.profilePic = profilePicUrl;
     }
+
+    let videoUrl = currentProfile.videoUrl;
+    if (files?.video) {
+        videoUrl = await uploadToR2(files.video[0], 'engineers/videos');
+        updateData.videoUrl = videoUrl;
+    }
+
+    // Handle Certifications (Up to 15)
+    if (files?.certifications) {
+      const existingCount = currentProfile.certificates.length;
+      const newFiles = files.certifications;
+      
+      if (existingCount + newFiles.length > 15) {
+        return res.status(400).json({ message: 'Maximum 15 certificates allowed' });
+      }
+
+      const certificatePromises = newFiles.map(async (file) => {
+        const url = await uploadToR2(file, 'engineers/certifications');
+        return prisma.certificate.create({
+          data: {
+            engineerId: currentProfile.id,
+            url,
+            name: file.originalname
+          }
+        });
+      });
+
+      await Promise.all(certificatePromises);
+    }
+
+    // Mandatory Field Validation
+    // Engineer MUST have profilePic and videoUrl to be complete
+    const isComplete = !!(profilePicUrl && videoUrl);
+    updateData.isProfileComplete = isComplete;
 
     const updatedProfile = await prisma.engineerProfile.update({
       where: { userId },
       data: updateData,
+      include: { certificates: true }
     });
 
     res.json(updatedProfile);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteCertificate = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const engineer = await prisma.engineerProfile.findUnique({
+      where: { userId }
+    });
+
+    if (!engineer) {
+      return res.status(404).json({ message: 'Engineer profile not found' });
+    }
+
+    const certificate = await prisma.certificate.findUnique({
+      where: { id: id as string }
+    });
+
+    if (!certificate || certificate.engineerId !== engineer.id) {
+      return res.status(404).json({ message: 'Certificate not found or unauthorized' });
+    }
+
+    await prisma.certificate.delete({
+      where: { id: id as string }
+    });
+
+    res.json({ message: 'Certificate removed successfully' });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

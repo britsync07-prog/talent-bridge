@@ -105,7 +105,7 @@ const EngineerDashboard = () => {
 
   const [selectedResume, setSelectedResume] = useState<File | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
-  const [selectedCerts, setSelectedCerts] = useState<File | null>(null);
+  const [selectedCerts, setSelectedCerts] = useState<File[]>([]);
   const [selectedPic, setSelectedPic] = useState<File | null>(null);
   const [picPreview, setSelectedPicPreview] = useState<string | null>(null);
 
@@ -183,9 +183,31 @@ const EngineerDashboard = () => {
     finally { setWsSending(false); }
   };
 
+  const handleRemoveCertificate = async (certId: string) => {
+    if (!confirm('Remove this certificate?')) return;
+    try {
+        await api.delete(`/engineers/certificates/${certId}`);
+        alert('Certificate removed.');
+        fetchDashboardData();
+    } catch {
+        alert('Failed to remove certificate');
+    }
+  };
+
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validation
+    const hasPic = profile.profilePic || selectedPic;
+    const hasVideo = profile.videoUrl || selectedVideo;
+
+    if (!hasPic || !hasVideo) {
+        alert('Profile Picture and Introduction Video are mandatory to complete your roster induction.');
+        if (!hasPic) document.getElementById('profilePic')?.scrollIntoView({ behavior: 'smooth' });
+        else document.getElementById('video-upload')?.scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+
     // Check video size limit
     if (selectedVideo && selectedVideo.size > 20 * 1024 * 1024) {
         alert('Video file size exceeds 20MB limit. Please compress or select a smaller file.');
@@ -196,15 +218,20 @@ const EngineerDashboard = () => {
     const formData = new FormData();
     
     Object.keys(profile).forEach(key => {
-        if (!['id', 'userId', 'createdAt', 'updatedAt', 'user', 'resumeUrl', 'videoUrl', 'certifications', 'profilePic', 'contracts', 'interests'].includes(key)) {
+        if (!['id', 'userId', 'createdAt', 'updatedAt', 'user', 'resumeUrl', 'videoUrl', 'certificates', 'profilePic', 'contracts', 'interests', 'isProfileComplete'].includes(key)) {
             formData.append(key, profile[key] || '');
         }
     });
 
     if (selectedResume) formData.append('resume', selectedResume);
     if (selectedVideo) formData.append('video', selectedVideo);
-    if (selectedCerts) formData.append('certifications', selectedCerts);
     if (selectedPic) formData.append('profilePic', selectedPic);
+    
+    if (selectedCerts.length > 0) {
+        selectedCerts.forEach(file => {
+            formData.append('certifications', file);
+        });
+    }
 
     try {
         await api.patch('/engineers/profile', formData, {
@@ -214,10 +241,10 @@ const EngineerDashboard = () => {
         fetchDashboardData();
         setSelectedResume(null);
         setSelectedVideo(null);
-        setSelectedCerts(null);
+        setSelectedCerts([]);
         setSelectedPic(null);
-    } catch (err) {
-        alert('Update Protocol Failed');
+    } catch (err: any) {
+        alert(err.response?.data?.message || 'Update Protocol Failed');
     } finally {
         setSavingProfile(false);
     }
@@ -296,8 +323,14 @@ const EngineerDashboard = () => {
                     <h1 className="text-5xl font-black mb-3 tracking-tighter text-[#32312D] uppercase">
                         Operator: {profile?.fullName?.split(' ')[0] || 'Agent'}
                     </h1>
-                    <p className="text-[#32312D]/60 font-medium text-lg uppercase tracking-widest text-xs">Uplink Status: <span className="text-[#3A3F5F]">Synchronized</span></p>
+                    <p className="text-[#32312D]/60 font-medium text-lg uppercase tracking-widest text-xs">Uplink Status: <span className="text-[#3A3F5F]">{profile?.isProfileComplete ? 'Synchronized' : 'Incomplete'}</span></p>
                 </div>
+
+                {!profile?.isProfileComplete && (
+                    <div className="absolute top-0 right-0 p-4">
+                         <div className="bg-[#3A3F5F] text-white px-6 py-2 rounded-bl-3xl font-black text-[8px] uppercase tracking-[0.3em] animate-pulse">Action Required: Complete Induction</div>
+                    </div>
+                )}
 
                 {profile && (
                     <div className="p-px rounded-[32px] bg-[#32312D]/5">
@@ -690,14 +723,55 @@ const EngineerDashboard = () => {
                                           maxSize={20 * 1024 * 1024}
                                         />
 
-                                        <FileUploadZone 
-                                          id="cert-upload"
-                                          label="Accolades (Certifications)" 
-                                          accept="image/*,.pdf"
-                                          icon="🏆"
-                                          currentFile={profile.certifications}
-                                          onFileSelect={setSelectedCerts}
-                                        />
+                                        <div className="space-y-6">
+                                            <div className="flex items-center justify-between">
+                                                <label className="block text-[10px] font-black text-[#32312D]/40 uppercase tracking-[0.3em]">Accolades (Certifications - Max 15)</label>
+                                                <span className="text-[10px] font-black text-[#3A3F5F]">{profile.certificates?.length || 0}/15</span>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-1 gap-4">
+                                                {profile.certificates?.map((cert: any) => (
+                                                    <div key={cert.id} className="flex items-center justify-between p-4 bg-[#E7E6E2]/30 border border-[#32312D]/10 rounded-2xl group">
+                                                        <div className="flex items-center gap-4">
+                                                            <span className="text-xl">🏆</span>
+                                                            <div className="min-w-0">
+                                                                <div className="text-[10px] font-black text-[#32312D] uppercase truncate max-w-[200px]">{cert.name || 'Certificate'}</div>
+                                                                <Link href={getFileUrl(cert.url)} target="_blank" className="text-[8px] font-black text-[#3A3F5F] uppercase underline underline-offset-2">View Transmission</Link>
+                                                            </div>
+                                                        </div>
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => handleRemoveCertificate(cert.id)}
+                                                            className="w-8 h-8 rounded-full flex items-center justify-center text-xs hover:bg-red-500 hover:text-white transition-all text-[#32312D]/20 opacity-0 group-hover:opacity-100"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {(profile.certificates?.length || 0) < 15 && (
+                                                <div className="space-y-4">
+                                                    <FileUploadZone 
+                                                      id="cert-upload"
+                                                      label={selectedCerts.length > 0 ? `${selectedCerts.length} Files Selected` : "Upload New Accolades"} 
+                                                      accept="image/*,.pdf"
+                                                      icon="📤"
+                                                      onFileSelect={(file: File) => setSelectedCerts(prev => [...prev].concat(file))}
+                                                    />
+                                                    {selectedCerts.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {selectedCerts.map((f, i) => (
+                                                                <div key={i} className="px-3 py-1 bg-[#3A3F5F] text-white rounded-full text-[8px] font-black uppercase flex items-center gap-2">
+                                                                    {f.name}
+                                                                    <button type="button" onClick={() => setSelectedCerts(prev => prev.filter((_, idx) => idx !== i))}>✕</button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteInterest = exports.updateInterestStatus = exports.getAllInterests = exports.getAllContracts = exports.getActivityLogs = exports.getStats = exports.approveEmployer = exports.getAllEmployers = exports.toggleEngineerFeature = exports.updateEngineerApprovalStatus = exports.approveEngineer = exports.getAllEngineers = exports.createEngineerVerificationMeeting = exports.createInterestMeeting = void 0;
+exports.disapproveJob = exports.approveJob = exports.getAllJobsForAdmin = exports.updateSystemConfig = exports.getSystemConfig = exports.deleteInterest = exports.updateInterestStatus = exports.getAllInterests = exports.getAllContracts = exports.getActivityLogs = exports.getStats = exports.approveEmployer = exports.getAllEmployers = exports.toggleEngineerFeature = exports.updateEngineerApprovalStatus = exports.approveEngineer = exports.getAllEngineers = exports.createEngineerVerificationMeeting = exports.createInterestMeeting = void 0;
 const prisma_1 = __importDefault(require("../lib/prisma"));
 const meeting_1 = require("../utils/meeting");
 const createInterestMeeting = async (req, res) => {
@@ -91,6 +91,11 @@ const getAllEngineers = async (req, res) => {
                         email: true,
                         createdAt: true
                     }
+                },
+                interests: {
+                    include: {
+                        employer: true
+                    }
                 }
             }
         });
@@ -104,9 +109,9 @@ exports.getAllEngineers = getAllEngineers;
 const approveEngineer = async (req, res) => {
     try {
         const id = req.params.id;
-        const { isApproved } = req.body;
+        const { isApproved, disapprovalReason } = req.body;
         // When admin toggles isApproved directly, we should update approvalStatus accordingly
-        const data = { isApproved };
+        const data = { isApproved, disapprovalReason: disapprovalReason || null };
         if (isApproved) {
             data.approvalStatus = 'FULLY_APPROVED';
         }
@@ -171,6 +176,11 @@ const getAllEmployers = async (req, res) => {
                         email: true,
                         createdAt: true
                     }
+                },
+                interests: {
+                    include: {
+                        engineer: true
+                    }
                 }
             }
         });
@@ -184,10 +194,10 @@ exports.getAllEmployers = getAllEmployers;
 const approveEmployer = async (req, res) => {
     try {
         const id = req.params.id;
-        const { isApproved } = req.body;
+        const { isApproved, disapprovalReason } = req.body;
         const employer = await prisma_1.default.employerProfile.update({
             where: { id },
-            data: { isApproved }
+            data: { isApproved, disapprovalReason: disapprovalReason || null }
         });
         res.json(employer);
     }
@@ -204,10 +214,11 @@ const getStats = async (req, res) => {
             prisma_1.default.job.count(),
             prisma_1.default.contract.count({ where: { status: 'ACTIVE' } })
         ]);
-        const paidInvoices = await prisma_1.default.invoice.findMany({
+        const revenueAgg = await prisma_1.default.invoice.aggregate({
+            _sum: { amount: true },
             where: { status: 'PAID' }
         });
-        const totalRevenue = paidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+        const totalRevenue = revenueAgg._sum.amount ?? 0;
         res.json({
             totalEngineers: engineersCount,
             totalEmployers: employersCount,
@@ -300,3 +311,70 @@ const deleteInterest = async (req, res) => {
     }
 };
 exports.deleteInterest = deleteInterest;
+const getSystemConfig = async (req, res) => {
+    try {
+        const config = await prisma_1.default.systemConfig.findMany();
+        res.json(config);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.getSystemConfig = getSystemConfig;
+const updateSystemConfig = async (req, res) => {
+    try {
+        const { key, value } = req.body;
+        const config = await prisma_1.default.systemConfig.upsert({
+            where: { key },
+            update: { value },
+            create: { key, value }
+        });
+        res.json(config);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.updateSystemConfig = updateSystemConfig;
+const getAllJobsForAdmin = async (req, res) => {
+    try {
+        const jobs = await prisma_1.default.job.findMany({
+            include: { employer: true },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(jobs);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.getAllJobsForAdmin = getAllJobsForAdmin;
+const approveJob = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const job = await prisma_1.default.job.update({
+            where: { id },
+            data: { status: 'OPEN', disapprovalReason: null }
+        });
+        res.json(job);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.approveJob = approveJob;
+const disapproveJob = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { reason } = req.body;
+        const job = await prisma_1.default.job.update({
+            where: { id },
+            data: { status: 'DISAPPROVED', disapprovalReason: reason }
+        });
+        res.json(job);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.disapproveJob = disapproveJob;

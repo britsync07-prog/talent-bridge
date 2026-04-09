@@ -8,24 +8,28 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prisma_1 = __importDefault(require("../lib/prisma"));
 const generateToken = (id) => {
-    return jsonwebtoken_1.default.sign({ id }, process.env.JWT_SECRET || 'secret', {
+    if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET is not defined in environment variables');
+    }
+    return jsonwebtoken_1.default.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: '30d',
     });
 };
 const registerEmployer = async (req, res) => {
     try {
-        const { email, password, companyName, website, size, industry, description, location } = req.body;
+        const { email, password, companyName, website, size, industry, description, location, businessRegNumber } = req.body;
         if (!email || !password) {
             return res.status(400).json({ message: 'Please provide both email and password' });
         }
-        const userExists = await prisma_1.default.user.findUnique({ where: { email } });
+        const normalizedEmail = email.toLowerCase();
+        const userExists = await prisma_1.default.user.findUnique({ where: { email: normalizedEmail } });
         if (userExists) {
             return res.status(400).json({ message: 'User already exists' });
         }
-        const hashedPassword = await bcryptjs_1.default.hash(password, 10);
+        const hashedPassword = await bcryptjs_1.default.hash(password, 8);
         const user = await prisma_1.default.user.create({
             data: {
-                email,
+                email: normalizedEmail,
                 password: hashedPassword,
                 role: 'EMPLOYER',
                 employerProfile: {
@@ -36,6 +40,7 @@ const registerEmployer = async (req, res) => {
                         industry,
                         description,
                         location,
+                        businessRegNumber,
                     }
                 },
                 activity_logs: {
@@ -67,16 +72,17 @@ const registerEngineer = async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ message: 'Please provide both email and password' });
         }
-        const userExists = await prisma_1.default.user.findUnique({ where: { email } });
+        const normalizedEmail = email.toLowerCase();
+        const userExists = await prisma_1.default.user.findUnique({ where: { email: normalizedEmail } });
         if (userExists) {
             return res.status(400).json({ message: 'User already exists' });
         }
-        const hashedPassword = await bcryptjs_1.default.hash(password, 10);
+        const hashedPassword = await bcryptjs_1.default.hash(password, 8);
         const hRate = parseFloat(hourlyRate) || 0;
         const mSalary = parseFloat(monthlySalaryExpectation) || (hRate * 160); // Default to 160 hours/month
         const user = await prisma_1.default.user.create({
             data: {
-                email,
+                email: normalizedEmail,
                 password: hashedPassword,
                 role: 'ENGINEER',
                 engineerProfile: {
@@ -93,7 +99,6 @@ const registerEngineer = async (req, res) => {
                         github,
                         linkedin,
                         resumeUrl,
-                        certifications,
                         isApproved: false, // Must be approved by admin
                     }
                 },
@@ -126,9 +131,10 @@ const login = async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ message: 'Please provide both email and password' });
         }
-        console.log(`Login attempt for: ${email}`);
+        const normalizedEmail = email.toLowerCase();
+        console.log(`Login attempt for: ${normalizedEmail}`);
         const user = await prisma_1.default.user.findUnique({
-            where: { email },
+            where: { email: normalizedEmail },
             include: {
                 adminProfile: true,
                 employerProfile: true,
@@ -142,14 +148,7 @@ const login = async (req, res) => {
         const isMatch = await bcryptjs_1.default.compare(password, user.password);
         console.log(`Password match: ${isMatch}`);
         if (isMatch) {
-            // Create activity log
-            await prisma_1.default.activity_log.create({
-                data: {
-                    userId: user.id,
-                    action: 'user login',
-                    details: `User logged in with role: ${user.role}`
-                }
-            });
+            // Respond immediately — log asynchronously so it doesn't block
             res.json({
                 id: user.id,
                 email: user.email,
@@ -157,6 +156,14 @@ const login = async (req, res) => {
                 profile: user.adminProfile || user.employerProfile || user.engineerProfile,
                 token: generateToken(user.id),
             });
+            // Fire-and-forget: do not await
+            prisma_1.default.activity_log.create({
+                data: {
+                    userId: user.id,
+                    action: 'user login',
+                    details: `User logged in with role: ${user.role}`
+                }
+            }).catch(err => console.error('Activity log error:', err));
         }
         else {
             res.status(401).json({ message: 'Invalid email or password' });

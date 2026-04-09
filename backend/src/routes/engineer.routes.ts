@@ -8,7 +8,8 @@ import {
   getEngineerStats,
   getSuggestedJobs,
   getTimesheets,
-  getEndorsements
+  getEndorsements,
+  deleteCertificate
 } from '../controllers/engineer.controller';
 import { protect, engineer, optionalProtect } from '../middleware/auth.middleware';
 import { upload } from '../utils/multer';
@@ -23,9 +24,11 @@ router.get('/endorsements', protect, engineer, getEndorsements);
 router.patch('/profile', protect, engineer, upload.fields([
   { name: 'resume', maxCount: 1 },
   { name: 'video', maxCount: 1 },
-  { name: 'certifications', maxCount: 1 },
+  { name: 'certifications', maxCount: 15 },
   { name: 'profilePic', maxCount: 1 }
 ]), updateProfile);
+
+router.delete('/certificates/:id', protect, engineer, deleteCertificate);
 
 router.get('/match', optionalProtect, matchEngineers);
 router.get('/', optionalProtect, getEngineers);

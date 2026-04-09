@@ -70,7 +70,25 @@ const getChatPartners = async (req, res) => {
                 engineerProfile: true
             }
         });
-        res.json(partners);
+        const safePartners = partners.map((p) => {
+            const role = req.user.role;
+            if (role === 'ENGINEER' && p.role === 'EMPLOYER') {
+                return {
+                    id: p.id,
+                    role: p.role,
+                    employerProfile: p.employerProfile ? { id: p.employerProfile.id, companyName: 'Verified Client' } : null
+                };
+            }
+            if (role === 'EMPLOYER' && p.role === 'ENGINEER') {
+                return {
+                    id: p.id,
+                    role: p.role,
+                    engineerProfile: p.engineerProfile ? { id: p.engineerProfile.id, fullName: `Specialist ${p.engineerProfile.id.slice(0, 5).toUpperCase()}` } : null
+                };
+            }
+            return { id: p.id, role: p.role, adminProfile: p.adminProfile, employerProfile: p.employerProfile, engineerProfile: p.engineerProfile };
+        });
+        res.json(safePartners);
     }
     catch (error) {
         res.status(500).json({ message: error.message });
