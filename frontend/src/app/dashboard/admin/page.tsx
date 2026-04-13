@@ -387,7 +387,7 @@ const AdminDashboard = () => {
                                         <div className="bg-white p-8 rounded-[31px] group shadow-sm border border-[#32312D]/10">
                                             <div className="flex items-center gap-5 mb-8">
                                                 <div className="w-14 h-14 bg-[#3A3F5F]/5 rounded-2xl flex items-center justify-center text-xl font-bold text-[#3A3F5F] border border-[#3A3F5F]/10 group-hover:bg-[#3A3F5F] group-hover:text-white transition-all uppercase">
-                                                    {eng.fullName.charAt(0)}
+                                                    {eng.fullName?.charAt(0) || 'E'}
                                                 </div>
                                                 <div className="text-left">
                                                     <div className="font-black text-[#32312D] text-lg tracking-tight uppercase line-clamp-1">{eng.fullName}</div>

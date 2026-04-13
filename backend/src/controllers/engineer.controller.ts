@@ -22,7 +22,21 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: 'Engineer profile not found' });
     }
 
-    res.json(engineer);
+    // Anonymize employer info for the engineer
+    const anonymizedInterests = engineer.interests.map(interest => ({
+      ...interest,
+      employer: {
+        ...interest.employer,
+        companyName: `Opportunity #${interest.employerId.slice(0, 4)}`,
+        website: null,
+        description: 'Identity concealed until formal engagement.'
+      }
+    }));
+
+    res.json({
+      ...engineer,
+      interests: anonymizedInterests
+    });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -207,6 +221,7 @@ export const matchEngineers = async (req: AuthRequest, res: Response) => {
 
       return {
         ...safeEngineer,
+        fullName: isAdmin ? engineer.fullName : `Elite Operator #${engineer.id.slice(0, 4)}`,
         matchScore: score,
         matchedSkills,
         matchPercentage: Math.min(100, Math.max(0, (score / 50) * 100)) // Arbitrary 50 max base score for percentage
@@ -267,7 +282,12 @@ export const getEngineers = async (req: AuthRequest, res: Response) => {
       ] as any
     });
 
-    res.json(engineers);
+    const processedEngineers = engineers.map(eng => ({
+        ...eng,
+        fullName: isAdmin ? eng.fullName : `Elite Operator #${eng.id.slice(0, 4)}`
+    }));
+
+    res.json(processedEngineers);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -306,7 +326,12 @@ export const getEngineerById = async (req: AuthRequest, res: Response) => {
         // specifically excluding github, linkedin, portfolioWebsite, resumeUrl, certifications, email
     };
 
-    res.json(safeEngineer);
+    const data = isAdmin ? safeEngineer : {
+        ...safeEngineer,
+        fullName: `Elite Operator #${engineer.id.slice(0, 4)}`
+    };
+
+    res.json(data);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

@@ -108,7 +108,11 @@ export const getAllEngineers = async (req: Request, res: Response) => {
         }
       }
     });
-    res.json(engineers);
+    const processedEngineers = engineers.map(eng => ({
+      ...eng,
+      fullName: eng.fullName || 'Unnamed Engineer'
+    }));
+    res.json(processedEngineers);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -196,7 +200,11 @@ export const getAllEmployers = async (req: Request, res: Response) => {
         }
       }
     });
-    res.json(employers);
+    const processedEmployers = employers.map(emp => ({
+      ...emp,
+      companyName: emp.companyName || 'Unnamed Employer'
+    }));
+    res.json(processedEmployers);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -288,7 +296,12 @@ export const getAllInterests = async (req: Request, res: Response) => {
       },
       orderBy: { createdAt: 'desc' }
     });
-    res.json(interests);
+    const processedInterests = interests.map(interest => ({
+      ...interest,
+      engineer: interest.engineer ? { ...interest.engineer, fullName: interest.engineer.fullName || 'Unnamed Engineer' } : null,
+      employer: interest.employer ? { ...interest.employer, companyName: interest.employer.companyName || 'Unnamed Employer' } : null
+    }));
+    res.json(processedInterests);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

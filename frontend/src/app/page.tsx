@@ -90,7 +90,7 @@ const LandingPage = () => {
             {featured.map((eng, i) => (
               <div key={i} className="group bg-white rounded-[40px] p-12 border border-[#32312D]/10 hover:border-[#3A3F5F] transition-all duration-700 shadow-sm hover:shadow-2xl relative overflow-hidden text-left">
                 <div className="w-24 h-24 bg-[#E7E6E2] rounded-3xl mb-8 flex items-center justify-center text-4xl font-black text-[#3A3F5F] border border-[#32312D]/5">
-                    {eng.fullName.charAt(0)}
+                    {eng.fullName?.charAt(0) || 'E'}
                 </div>
                 <h3 className="text-2xl font-black text-[#32312D] mb-2 group-hover:text-[#3A3F5F] transition-colors uppercase tracking-tight">{eng.fullName}</h3>
                 <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-8">{eng.country}</p>

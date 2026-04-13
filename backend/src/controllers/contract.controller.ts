@@ -9,20 +9,27 @@ export const getMyContracts = async (req: AuthRequest, res: Response) => {
 
     if (req.user.role === 'EMPLOYER') {
       const employer = await prisma.employerProfile.findUnique({ where: { userId: req.user.id } });
-      contracts = await prisma.contract.findMany({
+      const unfiltered = await prisma.contract.findMany({
         where: { employerId: employer?.id },
         include: { engineer: true, tasks: true }
       });
+      contracts = unfiltered.map(c => ({
+        ...c,
+        engineer: {
+            ...c.engineer,
+            fullName: `Elite Operator #${c.engineer.id.slice(0, 4)}`
+        }
+      }));
     } else if (req.user.role === 'ENGINEER') {
       const engineer = await prisma.engineerProfile.findUnique({ where: { userId: req.user.id } });
       const rawContracts = await prisma.contract.findMany({
         where: { engineerId: engineer?.id },
         include: { employer: true, tasks: true }
       });
-      // Redact employer info
+      // Redact employer info for engineer
       contracts = rawContracts.map(c => ({
         ...c,
-        employer: c.employer ? { id: c.employer.id, companyName: 'Verified Client' } : null
+        employer: c.employer ? { ...c.employer, companyName: `Opportunity #${c.employerId.slice(0, 4)}`, website: null } : null
       }));
     }
 
@@ -51,8 +58,15 @@ export const getContractById = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: 'Contract not found' });
     }
 
-    if (req.user.role === 'ENGINEER' && contract.employer) {
-      (contract as any).employer = { id: contract.employer.id, companyName: 'Verified Client' };
+    const isAdmin = req.user?.role === 'ADMIN';
+
+    if (!isAdmin) {
+        if (req.user.role === 'ENGINEER' && contract.employer) {
+            (contract as any).employer = { ...contract.employer, companyName: `Opportunity #${contract.employerId.slice(0, 4)}`, website: null };
+        }
+        if (req.user.role === 'EMPLOYER' && contract.engineer) {
+            (contract as any).engineer = { ...contract.engineer, fullName: `Elite Operator #${contract.engineer.id.slice(0, 4)}` };
+        }
     }
 
     res.json(contract);
