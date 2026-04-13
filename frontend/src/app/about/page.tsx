@@ -9,10 +9,10 @@ const AboutPage = () => {
     <div className="min-h-screen bg-[#E7E6E2] text-[#32312D] font-sans selection:bg-[#3A3F5F] selection:text-white">
       <Navbar />
       
-      {/* 1. MANIFESTO HERO */}
+      {/* 1. OUR VISION HERO */}
       <section className="py-40 px-6 md:px-12 max-w-7xl mx-auto text-center">
-        <span className="text-[#3A3F5F] font-black uppercase text-[10px] tracking-[0.5em] block mb-8">The Manifesto</span>
-        <h1 className="text-7xl md:text-8xl font-black mb-12 tracking-tighter max-w-4xl mx-auto uppercase text-[#32312D]">The Vanguard of <br/><span className="text-[#3A3F5F]">Global Intelligence.</span></h1>
+        <span className="text-[#3A3F5F] font-black uppercase text-[10px] tracking-[0.5em] block mb-8">Our Vision</span>
+        <h1 className="text-7xl md:text-8xl font-black mb-12 tracking-tighter max-w-4xl mx-auto uppercase text-[#32312D]">Leading the World in <br/><span className="text-[#3A3F5F]">AI Talent.</span></h1>
         <p className="text-xl text-[#32312D]/60 max-w-2xl mx-auto mb-20 leading-relaxed uppercase tracking-widest font-medium">Talent Bridge is not a marketplace. We are a secure infrastructure for world-class talent and the organizations that deserve them.</p>
       </section>
 
@@ -20,8 +20,8 @@ const AboutPage = () => {
       <section className="py-40 px-6 md:px-12 bg-white border-y border-[#32312D]/10">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-20">
             {[
-                { title: 'Absolute Quality', desc: 'We reject 99% of nodes. Compromise is not in our functional specification.', icon: '💎' },
-                { title: 'Neural focus', desc: 'We only build AI. We do not dilute our processing power with other domains.', icon: '🎯' },
+                { title: 'Absolute Quality', desc: 'We reject 99% of applicants. We never compromise on quality.', icon: '💎' },
+                { title: 'AI Focused', desc: 'We only build AI. We do not dilute our processing power with other domains.', icon: '🎯' },
                 { title: 'Global Ethics', desc: 'All AI development follows strict alignment protocols and safety standards.', icon: '⚖️' },
             ].map((p, i) => (
                 <div key={i} className="text-center group">
@@ -35,10 +35,10 @@ const AboutPage = () => {
 
       {/* 3. EXECUTIVE LEADERSHIP */}
       <section className="py-40 px-6 md:px-12 max-w-7xl mx-auto">
-          <h2 className="text-4xl font-black text-[#32312D] mb-24 tracking-tighter uppercase text-center">Executive Council.</h2>
+          <h2 className="text-4xl font-black text-[#32312D] mb-24 tracking-tighter uppercase text-center">Our Team.</h2>
           <div className="grid md:grid-cols-3 gap-12">
               {[
-                  { name: 'Dr. Aris Thorne', role: 'Head of Neural Vetting', origin: 'CERN / Stanford' },
+                  { name: 'Dr. Aris Thorne', role: 'Head of Technical Selection', origin: 'CERN / Stanford' },
                   { name: 'Marcus Sterling', role: 'Managing Partner', origin: 'Goldman / YC' },
                   { name: 'Elena Vossen', role: 'Chief of Ethics', origin: 'DeepMind / Oxford' },
               ].map((member, i) => (
@@ -65,7 +65,7 @@ const AboutPage = () => {
               </div>
               <div>
                   <div className="text-5xl font-black text-[#32312D] mb-4 tracking-tighter uppercase">800M</div>
-                  <div className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest">Compute Cycle Index</div>
+                  <div className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest">AI Projects Delivered</div>
               </div>
           </div>
       </section>
@@ -85,7 +85,7 @@ const AboutPage = () => {
                   <div className="text-[#3A3F5F] font-black text-xl tracking-tighter">2025</div>
                   <div className="pt-1">
                       <div className="text-[#32312D] font-black uppercase tracking-widest text-sm mb-2">Global Expansion</div>
-                      <p className="text-[#32312D]/60 text-[10px] font-black uppercase tracking-widest leading-loose">Opening of London and Tokyo nodes to capture decentralized AI brilliance.</p>
+                      <p className="text-[#32312D]/60 text-[10px] font-black uppercase tracking-widest leading-loose">Opening of London and Tokyo offices to capture top AI talent.</p>
                   </div>
               </div>
           </div>
@@ -94,7 +94,7 @@ const AboutPage = () => {
       {/* 6. OFFICES */}
       <section className="py-40 bg-white">
           <div className="max-w-7xl mx-auto px-6 text-center">
-              <h2 className="text-2xl font-black text-[#32312D] mb-20 uppercase tracking-[0.4em]">Operations Centers</h2>
+              <h2 className="text-2xl font-black text-[#32312D] mb-20 uppercase tracking-[0.4em]">Our Offices</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                   {['San Francisco', 'London', 'Tokyo', 'Singapore'].map((city, i) => (
                       <div key={i} className="text-[#32312D]/40 font-black uppercase tracking-widest text-[10px]">{city} • Global Hub</div>
@@ -107,7 +107,7 @@ const AboutPage = () => {
       <section className="py-40 px-6 md:px-12 bg-[#E7E6E2]">
         <div className="max-w-6xl mx-auto bg-white rounded-[80px] p-24 text-center border border-[#32312D]/10 shadow-xl relative overflow-hidden">
             <h2 className="text-6xl font-black text-[#32312D] mb-12 tracking-tighter uppercase">Our Legacy is Your <br/>Future.</h2>
-            <Link href="/signup" className="inline-block bg-[#3A3F5F] text-white px-20 py-6 rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-[#32312D] transition-all shadow-lg shadow-[#3A3F5F]/20">Establish Alliance</Link>
+            <Link href="/signup" className="inline-block bg-[#3A3F5F] text-white px-20 py-6 rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-[#32312D] transition-all shadow-lg shadow-[#3A3F5F]/20">Join Us</Link>
         </div>
       </section>
     </div>

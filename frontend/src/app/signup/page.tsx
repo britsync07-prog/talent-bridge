@@ -40,9 +40,9 @@ const SignupPage = () => {
           
           <div className="w-full max-w-xl bg-white p-16 rounded-[60px] border border-[#32312D]/10 shadow-[0_0_100px_rgba(58,63,95,0.05)]">
               <div className="text-center mb-16">
-                  <div className="text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.5em] mb-6">Credential Acquisition</div>
-                  <h1 className="text-5xl font-black tracking-tighter uppercase mb-4 text-[#32312D]">Join The Roster.</h1>
-                  <p className="text-[#32312D]/40 text-[10px] font-black uppercase tracking-[0.2em]">Begin your induction into the Talent Bridge Standard.</p>
+                  <div className="text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.5em] mb-6">Create Account</div>
+                  <h1 className="text-5xl font-black tracking-tighter uppercase mb-4 text-[#32312D]">Join Our Network.</h1>
+                  <p className="text-[#32312D]/40 text-[10px] font-black uppercase tracking-[0.2em]">Start your registration into the Talent Bridge Standard.</p>
               </div>
 
               {error && <div className="mb-10 p-6 bg-red-50 border border-red-100 text-red-600 text-[10px] font-black uppercase tracking-widest text-center rounded-3xl">{error}</div>}
@@ -54,7 +54,7 @@ const SignupPage = () => {
                         onClick={() => setRole('EMPLOYER')}
                         className={`py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${role === 'EMPLOYER' ? 'bg-[#3A3F5F] text-white shadow-lg shadow-[#3A3F5F]/30' : 'bg-[#E7E6E2]/50 text-[#32312D]/40 border border-[#32312D]/5 hover:border-[#3A3F5F]/30'}`}
                       >
-                        Corporate
+                        Business
                       </button>
                       <button 
                         type="button"
@@ -67,18 +67,18 @@ const SignupPage = () => {
 
                   <div className="space-y-8">
                       <div className="space-y-3 text-left">
-                          <label className="block text-[8px] font-black text-[#32312D]/40 uppercase tracking-[0.4em] ml-2">Secure Identifier (Email)</label>
+                          <label className="block text-[8px] font-black text-[#32312D]/40 uppercase tracking-[0.4em] ml-2">Email Address</label>
                           <input 
                             type="email" 
                             required 
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full bg-[#E7E6E2]/30 border-b-2 border-[#32312D]/10 py-5 px-2 text-[#32312D] outline-none focus:border-[#3A3F5F] transition-all font-black uppercase text-xs tracking-widest placeholder:text-slate-300"
-                            placeholder="OPERATOR@CORE.NETWORK"
+                            placeholder="EMAIL@COMPANY.COM"
                           />
                       </div>
                       <div className="space-y-3 text-left">
-                          <label className="block text-[8px] font-black text-[#32312D]/40 uppercase tracking-[0.4em] ml-2">Passphrase (Password)</label>
+                          <label className="block text-[8px] font-black text-[#32312D]/40 uppercase tracking-[0.4em] ml-2">Password</label>
                           <input 
                             type="password" 
                             required 
@@ -97,7 +97,7 @@ const SignupPage = () => {
                               value={businessRegNumber}
                               onChange={(e) => setBusinessRegNumber(e.target.value)}
                               className="w-full bg-[#E7E6E2]/30 border-b-2 border-[#32312D]/10 py-5 px-2 text-[#32312D] outline-none focus:border-[#3A3F5F] transition-all font-black uppercase text-xs tracking-widest placeholder:text-slate-300"
-                              placeholder="REG-2026-XXXX"
+                              placeholder="Registration Number"
                             />
                         </div>
                       )}
@@ -107,12 +107,12 @@ const SignupPage = () => {
                     disabled={loading}
                     className="w-full mt-12 bg-[#3A3F5F] text-white py-7 rounded-3xl font-black uppercase text-xs tracking-[0.4em] hover:bg-[#32312D] transition-all shadow-2xl shadow-[#3A3F5F]/20 disabled:opacity-20"
                   >
-                    {loading ? 'Synthesizing...' : 'Execute Induction'}
+                    {loading ? 'Processing...' : 'Complete Registration'}
                   </button>
               </form>
 
               <div className="mt-16 text-center">
-                  <Link href="/login" className="text-[9px] font-black text-[#32312D]/40 uppercase tracking-[0.3em] hover:text-[#3A3F5F] transition-all border-b border-[#3A3F5F] pb-1">Access Encryption Gateway →</Link>
+                  <Link href="/login" className="text-[9px] font-black text-[#32312D]/40 uppercase tracking-[0.3em] hover:text-[#3A3F5F] transition-all border-b border-[#3A3F5F] pb-1">Already have an account? Log in →</Link>
               </div>
           </div>
       </section>

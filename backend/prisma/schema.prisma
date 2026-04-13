@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("postgresql://bridge_user:nTdh2I2uOQ1VAclNhTch82OCpMWk7Vk3@77.237.239.69:5432/talent_bridge?schema=public")
 }
 
 model User {

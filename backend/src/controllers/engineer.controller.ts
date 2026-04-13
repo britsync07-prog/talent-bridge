@@ -427,4 +427,64 @@ export const getEndorsements = async (req: AuthRequest, res: Response) => {
     }
 };
 
+export const getEngineerInterviews = async (req: AuthRequest, res: Response) => {
+    try {
+        const engineer = await prisma.engineerProfile.findUnique({
+            where: { userId: req.user.id }
+        });
+        if (!engineer) return res.status(404).json({ message: 'Engineer not found' });
+
+        const interviews = await prisma.interest.findMany({
+            where: {
+                engineerId: engineer.id,
+                status: 'CALLED',
+                scheduledAt: { gte: new Date() }
+            },
+            include: { employer: true, job: true },
+            orderBy: { scheduledAt: 'asc' }
+        });
+
+        // Redact employer info
+        const safeInterviews = interviews.map(i => ({
+            ...i,
+            employer: i.employer ? { id: i.employer.id, companyName: 'Verified Client' } : null
+        }));
+
+        res.json(safeInterviews);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getMyEmployers = async (req: AuthRequest, res: Response) => {
+    try {
+        const engineer = await prisma.engineerProfile.findUnique({
+            where: { userId: req.user.id }
+        });
+        if (!engineer) return res.status(404).json({ message: 'Engineer not found' });
+
+        const contracts = await prisma.contract.findMany({
+            where: { engineerId: engineer.id },
+            include: { employer: true }
+        });
+
+        const employers = contracts
+            .map(c => c.employer)
+            .filter((e, index, self) => e && self.findIndex(se => se?.id === e.id) === index);
+
+        // Redact sensitive info
+        const safeEmployers = employers.map(e => ({
+            id: e?.id,
+            companyName: 'Verified Client',
+            industry: e?.industry,
+            location: e?.location
+        }));
+
+        res.json(safeEmployers);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
 

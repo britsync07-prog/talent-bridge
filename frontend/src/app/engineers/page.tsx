@@ -44,15 +44,15 @@ const EngineersPage = () => {
             <div className="max-w-2xl text-left">
                 <div className="flex items-center gap-3 mb-4">
                     <span className="w-2 h-2 rounded-full bg-[#3A3F5F]"></span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#3A3F5F]">Operational Roster</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#3A3F5F]">Engineer List</span>
                 </div>
-                <h1 className="text-6xl font-black tracking-tighter uppercase mb-2 text-[#32312D]">The Talent Bridge <span className="text-[#3A3F5F]">Network.</span></h1>
-                <p className="text-slate-400 font-medium uppercase tracking-widest text-sm">Direct access to the world's most scrutinized AI engineering nodes.</p>
+                <h1 className="text-6xl font-black tracking-tighter uppercase mb-2 text-[#32312D]">Our <span className="text-[#3A3F5F]">Engineers.</span></h1>
+                <p className="text-slate-400 font-medium uppercase tracking-widest text-sm">Direct access to the world's most scrutinized AI Engineers.</p>
             </div>
             <div className="w-full md:w-96">
                 <input 
                     type="text" 
-                    placeholder="QUERY SKILLS, SPECS, OR IDENT..." 
+                    placeholder="SEARCH BY SKILLS OR LOCATION..." 
                     className="w-full bg-[#E7E6E2] border-b-2 border-[#32312D]/10 py-4 px-2 text-[#32312D] outline-none focus:border-[#3A3F5F] transition-all font-black uppercase text-xs tracking-widest placeholder:text-slate-300"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
@@ -65,7 +65,7 @@ const EngineersPage = () => {
       <section className="py-20 px-6 md:px-12">
         <div className="max-w-7xl mx-auto">
           {loading ? (
-            <div className="text-center py-40 text-[#3A3F5F] font-black uppercase tracking-[0.5em] animate-pulse">Scanning Neural Network...</div>
+            <div className="text-center py-40 text-[#3A3F5F] font-black uppercase tracking-[0.5em] animate-pulse">Searching Engineers...</div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
               {filtered.map(eng => (
@@ -102,7 +102,7 @@ const EngineersPage = () => {
                         ) : (
                           <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Rate: Restricted</div>
                         )}
-                        <div className="text-[#3A3F5F] font-black text-[10px] uppercase tracking-widest group-hover:underline underline-offset-8">Audit Profile →</div>
+                        <div className="text-[#3A3F5F] font-black text-[10px] uppercase tracking-widest group-hover:underline underline-offset-8">View Profile →</div>
                     </div>
                   </div>
                 </Link>
@@ -116,8 +116,8 @@ const EngineersPage = () => {
       <section className="py-40 px-6 md:px-12 bg-white border-t border-[#32312D]/10">
         <div className="max-w-5xl mx-auto bg-[#E7E6E2] rounded-[60px] p-20 text-center border border-[#32312D]/10 relative overflow-hidden shadow-xl">
             <h2 className="text-4xl font-black mb-10 tracking-tighter uppercase text-[#32312D]">Seeking specific architecture?</h2>
-            <p className="text-slate-400 uppercase tracking-widest text-sm mb-12 max-w-lg mx-auto leading-loose">Our concierge team can hand-source specific engineering nodes for unique planetary-scale requirements.</p>
-            <Link href="/signup" className="inline-block bg-[#3A3F5F] text-white px-12 py-6 rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-[#3A3F5F]/90 transition-all shadow-lg shadow-[#3A3F5F]/20">Establish Presence</Link>
+            <p className="text-slate-400 uppercase tracking-widest text-sm mb-12 max-w-lg mx-auto leading-loose">Our team can help you find specific engineers for your needs.</p>
+            <Link href="/signup" className="inline-block bg-[#3A3F5F] text-white px-12 py-6 rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-[#3A3F5F]/90 transition-all shadow-lg shadow-[#3A3F5F]/20">Join Now</Link>
         </div>
       </section>
     </div>

@@ -1,0 +1,27 @@
+Database Connection (Supabase PostgreSQL)
+Get this from Supabase Project Settings > Database > Connection string (URI)
+DATABASE_URL="postgresql://bridge_user:nTdh2I2uOQ1VAclNhTch82OCpMWk7Vk3@77.237.239.69:5432/talent_bridge?schema=public"
+
+
+Security Keys
+JWT_SECRET="talent_bridge_secret_key_change_me"
+
+External Services
+STRIPE_SECRET_KEY="sktest..."
+
+Port
+PORT=5000
+LEADHUNTER_API_KEY=nexus_super_secret_key
+LEADHUNTER_API_BASE_URL=http://leadhunter-crm.work.gd:3001/
+LEADHUNTER_FRONTEND_URL=https://leadhunter-crm.work.gd/
+
+Cloudflare R2 Storage
+R2_ACCOUNT_ID: Found on the R2 overview page in the Cloudflare dashboard (right side)
+R2_ACCOUNT_ID="9ed8303661b0e2f450816251445f4a60"
+R2_ACCESS_KEY_ID + R2_SECRET_ACCESS_KEY: Create an R2 API Token with Object Read & Write
+R2_ACCESS_KEY_ID="102029b4a8a3c5876b251a39253e1a78"
+R2_SECRET_ACCESS_KEY="594f4dba6d41a2f1b41d73af2e9c62c226308ec0d101b717a8230df09ae4f233"
+R2_BUCKET_NAME: The name of your R2 bucket (e.g. talent-bridge-uploads)
+R2_BUCKET_NAME="vps-storage"
+R2_PUBLIC_URL: The public bucket URL (e.g. https://pub-xxxx.r2.dev/ or your custom domain)
+R2_PUBLIC_URL="https://pub-b6af0f6a359b46129b740cf81b3a6c8f.r2.dev/"

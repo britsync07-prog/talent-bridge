@@ -69,47 +69,49 @@ const EmployerDashboard = () => {
   const fetchDashboardData = async () => {
     setFetching(true);
     try {
+      // Use individual catch blocks to prevent a single 404 from crashing the whole dashboard
       const [jobsRes, contractsRes, invoicesRes, engineersRes, profileRes, statsRes, savedRes, interviewsRes] = await Promise.all([
-        api.get('/jobs/my-jobs'),
-        api.get('/contracts'),
-        api.get('/payments/invoices'),
-        api.get('/engineers'),
-        api.get('/employers/profile'),
-        api.get('/employers/stats'),
-        api.get('/employers/saved-candidates'),
-        api.get('/employers/interviews')
+        api.get('/jobs/my-jobs').catch(err => { console.warn('Jobs fetch failed', err); return { data: [] }; }),
+        api.get('/contracts').catch(err => { console.warn('Contracts fetch failed', err); return { data: [] }; }),
+        api.get('/payments/invoices').catch(err => { console.warn('Invoices fetch failed', err); return { data: [] }; }),
+        api.get('/engineers').catch(err => { console.warn('Engineers fetch failed', err); return { data: [] }; }),
+        api.get('/employers/profile').catch(err => { console.warn('Profile fetch failed', err); return { data: null }; }),
+        api.get('/employers/stats').catch(err => { console.warn('Stats fetch failed', err); return { data: {} }; }),
+        api.get('/employers/saved-candidates').catch(err => { console.warn('Saved candidates fetch failed', err); return { data: [] }; }),
+        api.get('/employers/interviews').catch(err => { console.warn('Interviews fetch failed', err); return { data: [] }; })
       ]);
+
       setData((prev: any) => ({
         ...prev,
         jobs: jobsRes.data || [],
         contracts: contractsRes.data || [],
         invoices: invoicesRes.data || [],
         featuredEngineers: (engineersRes.data || []).filter((e: any) => e.isFeatured).slice(0, 4),
-        stats: statsRes.data,
+        stats: statsRes.data || {},
         savedCandidates: savedRes.data || [],
         upcomingInterviews: interviewsRes.data || [],
         draftJobs: (jobsRes.data || []).filter((j: any) => j.status === 'DRAFT')
       }));
-      setProfile(profileRes.data);
+      if (profileRes.data) setProfile(profileRes.data);
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
+      console.error('Critical error fetching dashboard data:', err);
     } finally {
       setFetching(false);
     }
   };
 
   const handleWithdrawInterest = async (interestId: string) => {
-    if (!confirm('Are you sure you want to withdraw this interest?')) return;
+    if (!confirm('Are you sure you want to withdraw this application?')) return;
     try {
       await api.delete(`/jobs/interest/${interestId}`);
       fetchDashboardData();
     } catch (err) {
-      alert('Failed to withdraw interest');
+      alert('Failed to withdraw application');
     }
   };
 
   const handleDeleteJob = async (jobId: string) => {
-    if (!confirm('Are you sure you want to delete this job posting? This will also remove all expressed interests for this job.')) return;
+    if (!confirm('Are you sure you want to delete this job posting? This will also remove all applications for this job.')) return;
     try {
       await api.delete(`/jobs/${jobId}`);
       fetchDashboardData();
@@ -133,7 +135,7 @@ const EmployerDashboard = () => {
     if (!profile) return;
     setSavingProfile(true);
     try {
-      await api.patch('/employer/profile', {
+      await api.patch('/employers/profile', {
         companyName: profile.companyName,
         website: profile.website,
         location: profile.location,
@@ -141,7 +143,7 @@ const EmployerDashboard = () => {
         size: profile.size,
         description: profile.description,
       });
-      alert('Corporate Metadata Updated.');
+      alert('Company information updated.');
     } catch (err) {
       alert('Failed to save profile. Please try again.');
     } finally {
@@ -176,7 +178,7 @@ const EmployerDashboard = () => {
     <div className="min-h-screen bg-[#E7E6E2] flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-4 border-[#32312D]/10 border-t-[#3A3F5F] rounded-full animate-spin"></div>
-        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3A3F5F]">Accessing Employer Gateway...</div>
+        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3A3F5F]">Loading Dashboard...</div>
       </div>
     </div>
   );
@@ -191,22 +193,22 @@ const EmployerDashboard = () => {
             <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
                 <div>
                     <div className="flex items-center gap-3 mb-4">
-                        <span className="px-3 py-1 bg-[#E7E6E2] border border-[#32312D]/10 rounded-full text-[10px] font-black uppercase tracking-widest text-[#3A3F5F]">Corporate Portal v4.0</span>
+                        <span className="px-3 py-1 bg-[#E7E6E2] border border-[#32312D]/10 rounded-full text-[10px] font-black uppercase tracking-widest text-[#3A3F5F]">Employer Dashboard</span>
                         <span className="w-2 h-2 rounded-full bg-[#3A3F5F] animate-pulse"></span>
                     </div>
                     <h1 className="text-5xl font-black mb-3 tracking-tighter text-[#32312D] uppercase">
                         Employer Dashboard
                     </h1>
-                    <p className="text-slate-500 font-medium text-lg uppercase tracking-widest text-xs">Managing workforce & AI roadmap</p>
+                    <p className="text-slate-500 font-medium text-lg uppercase tracking-widest text-xs">Manage your team and jobs</p>
                 </div>
 
                 <div className="flex flex-wrap gap-4">
                     <div className="bg-[#E7E6E2]/50 px-8 py-4 rounded-2xl border border-[#32312D]/10 min-w-[200px]">
-                        <div className="text-[8px] font-black text-[#3A3F5F]/60 uppercase tracking-[0.2em] mb-1">Monthly Resource Burn</div>
+                        <div className="text-[8px] font-black text-[#3A3F5F]/60 uppercase tracking-[0.2em] mb-1">Monthly Spending</div>
                         <div className="text-2xl font-black text-[#3A3F5F]">${data.stats?.totalSpent?.toLocaleString() || '0'}</div>
                     </div>
                     <Link href="/dashboard/employer/jobs/new" className="bg-[#3A3F5F] text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#3A3F5F]/90 shadow-lg shadow-[#3A3F5F]/20 transition-all flex items-center">
-                        + Deploy Job Posting
+                        + Post a New Job
                     </Link>
                     <LogoutButton />
                 </div>
@@ -216,10 +218,10 @@ const EmployerDashboard = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
             {[
-                { label: 'Active Resources', value: data.stats?.activeResourceCount || 0, icon: '💎', trend: 'Global' },
-                { label: 'Open Requirements', value: data.stats?.openRequirementsCount || 0, icon: '📜', trend: 'Active' },
-                { label: 'Talent Interests', value: data.jobs.reduce((acc: number, j: any) => acc + (j.interests?.length || 0), 0), icon: '📡', trend: 'Incoming' },
-                { label: 'CapEx Invoiced', value: `$${data.stats?.totalSpent?.toLocaleString() || '0'}`, icon: '💰', trend: 'Secured' }
+                { label: 'Active Engineers', value: data.stats?.activeResourceCount || 0, icon: '💎', trend: 'Global' },
+                { label: 'Open Jobs', value: data.stats?.openRequirementsCount || 0, icon: '📜', trend: 'Active' },
+                { label: 'Applications', value: data.jobs.reduce((acc: number, j: any) => acc + (j.interests?.length || 0), 0), icon: '📡', trend: 'Incoming' },
+                { label: 'Total Invoiced', value: `$${data.stats?.totalSpent?.toLocaleString() || '0'}`, icon: '💰', trend: 'Secured' }
             ].map((stat, i) => (
                 <div key={i} className="group relative p-8 rounded-[32px] bg-white border border-[#32312D]/5 hover:border-[#32312D]/20 transition-all duration-500 shadow-sm hover:shadow-md">
                     <div className="flex justify-between items-center mb-6">
@@ -236,7 +238,7 @@ const EmployerDashboard = () => {
         {data.featuredEngineers.length > 0 && (
           <div className="mb-12">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-black uppercase tracking-tight text-[#32312D]">Top Vetted Neural Nodes</h2>
+              <h2 className="text-2xl font-black uppercase tracking-tight text-[#32312D]">Top Rated Engineers</h2>
               <div className="h-px flex-1 mx-8 bg-[#32312D]/10"></div>
               <Link href="/engineers" className="text-[#3A3F5F] text-[10px] font-black uppercase tracking-widest hover:underline decoration-2 underline-offset-4 transition-all">View Full Network →</Link>
             </div>
@@ -271,18 +273,27 @@ const EmployerDashboard = () => {
         {/* Tabs & Content */}
         <div className="flex flex-col lg:flex-row gap-12">
             <aside className="w-full lg:w-64 space-y-2">
-                {['jobs', 'interests', 'team', 'workspace', 'billing', 'analytics', 'saved', 'profile'].map((tab) => (
+                {[
+                  { id: 'jobs', label: 'Jobs' },
+                  { id: 'interests', label: 'Applications' },
+                  { id: 'team', label: 'Your Team' },
+                  { id: 'workspace', label: 'Messages' },
+                  { id: 'billing', label: 'Billing' },
+                  { id: 'analytics', label: 'Analytics' },
+                  { id: 'saved', label: 'Saved' },
+                  { id: 'profile', label: 'Profile' }
+                ].map((tab) => (
                     <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
                         className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.15em] transition-all group ${
-                            activeTab === tab 
+                            activeTab === tab.id 
                             ? 'bg-[#3A3F5F] text-white shadow-lg shadow-[#3A3F5F]/20' 
                             : 'text-slate-400 hover:text-[#32312D] hover:bg-[#E7E6E2]'
                         }`}
                     >
-                        {tab}
-                        <span className={`w-1.5 h-1.5 rounded-full transition-all ${activeTab === tab ? 'bg-white' : 'bg-transparent group-hover:bg-[#E7E6E2]'}`}></span>
+                        {tab.label}
+                        <span className={`w-1.5 h-1.5 rounded-full transition-all ${activeTab === tab.id ? 'bg-white' : 'bg-transparent group-hover:bg-[#E7E6E2]'}`}></span>
                     </button>
                 ))}
             </aside>
@@ -291,15 +302,15 @@ const EmployerDashboard = () => {
                 {activeTab === 'jobs' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
                         <div className="flex items-center justify-between mb-8">
-                            <h2 className="text-2xl font-black uppercase tracking-tight text-[#32312D]">Deployment Registry</h2>
+                            <h2 className="text-2xl font-black uppercase tracking-tight text-[#32312D]">Your Job Postings</h2>
                             <div className="h-px flex-1 mx-8 bg-[#32312D]/10"></div>
                         </div>
                         
                         {data.jobs.length === 0 ? (
                             <div className="p-20 rounded-[40px] border border-dashed border-[#32312D]/20 bg-[#E7E6E2]/20 text-center">
                                 <div className="text-4xl mb-4 opacity-40">🕳️</div>
-                                <div className="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-6">No deployment signals active</div>
-                                <Link href="/dashboard/employer/jobs/new" className="text-[#3A3F5F] font-black text-[10px] uppercase tracking-widest underline decoration-2 underline-offset-8">Initiate First Posting →</Link>
+                                <div className="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-6">No active job postings</div>
+                                <Link href="/dashboard/employer/jobs/new" className="text-[#3A3F5F] font-black text-[10px] uppercase tracking-widest underline decoration-2 underline-offset-8">Create your first job →</Link>
                             </div>
                         ) : (
                             <div className="grid gap-6">
@@ -316,11 +327,11 @@ const EmployerDashboard = () => {
                                                 <p className="text-slate-500 text-sm font-medium mb-6 line-clamp-1 uppercase tracking-tight">{job.description}</p>
                                                 <div className="flex gap-6">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Quota:</span>
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Budget:</span>
                                                         <span className="text-[10px] font-black text-[#32312D] uppercase tracking-widest">${job.maxBudget}/HR</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cycle:</span>
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Duration:</span>
                                                         <span className="text-[10px] font-black text-[#32312D] uppercase tracking-widest">{job.duration}</span>
                                                     </div>
                                                 </div>
@@ -330,7 +341,7 @@ const EmployerDashboard = () => {
                                                     onClick={() => handleToggleJobStatus(job.id, job.status)}
                                                     className="bg-white border border-slate-200 text-slate-400 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:text-[#32312D] hover:border-[#32312D] transition-all"
                                                 >
-                                                    {job.status === 'OPEN' ? 'Offline' : 'Online'}
+                                                    {job.status === 'OPEN' ? 'Close Job' : 'Open Job'}
                                                 </button>
                                                 <button onClick={() => handleDeleteJob(job.id)} className="p-4 bg-red-50 text-red-500 rounded-2xl border border-red-100 hover:bg-red-500 hover:text-white transition-all">
                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -347,21 +358,21 @@ const EmployerDashboard = () => {
                 {activeTab === 'interests' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-2xl font-black uppercase tracking-tight text-[#32312D]">Active Neural Links</h2>
+                            <h2 className="text-2xl font-black uppercase tracking-tight text-[#32312D]">Active Applications</h2>
                             <div className="bg-[#E7E6E2] border border-[#32312D]/10 p-4 rounded-2xl flex items-center gap-6 shadow-sm">
                                 <div>
-                                    <div className="text-[8px] font-black text-[#3A3F5F] uppercase tracking-widest mb-1">Next Uplink Session</div>
-                                    <div className="text-xs font-bold text-[#32312D] uppercase">{data.upcomingInterviews[0]?.time}</div>
+                                    <div className="text-[8px] font-black text-[#3A3F5F] uppercase tracking-widest mb-1">Next Interview</div>
+                                    <div className="text-xs font-bold text-[#32312D] uppercase">{data.upcomingInterviews[0]?.time || 'None Scheduled'}</div>
                                 </div>
-                                <button className="bg-[#3A3F5F] text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#3A3F5F]/90 transition-all shadow-md">Link Call</button>
+                                <button className="bg-[#3A3F5F] text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#3A3F5F]/90 transition-all shadow-md">Join Call</button>
                             </div>
                         </div>
                         
                         {data.jobs.every((j: any) => (j.interests?.length || 0) === 0) ? (
                             <div className="p-20 rounded-[40px] border border-dashed border-[#32312D]/20 bg-[#E7E6E2]/20 text-center">
                                 <div className="text-4xl mb-4 opacity-40">🎯</div>
-                                <h3 className="text-xl font-black text-[#32312D] mb-2 uppercase tracking-tight">No Interest Signals</h3>
-                                <p className="text-slate-500 font-medium italic mb-8 max-w-sm mx-auto">Initiate Smart Match on your active nodes to broadcast interest to top AI engineers.</p>
+                                <h3 className="text-xl font-black text-[#32312D] mb-2 uppercase tracking-tight">No Applications Yet</h3>
+                                <p className="text-slate-500 font-medium italic mb-8 max-w-sm mx-auto">Post a job to start receiving applications from top AI engineers.</p>
                             </div>
                         ) : (
                             <div className="grid gap-6">
@@ -373,7 +384,7 @@ const EmployerDashboard = () => {
                                                 <div className="text-left">
                                                     <h3 className="text-2xl font-black text-[#32312D] tracking-tight uppercase">{interest.engineer.fullName}</h3>
                                                     <div className="flex gap-4 items-center mt-2">
-                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol: {job.title}</span>
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Job: {job.title}</span>
                                                         <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${interest.type === 'LEASE' ? 'bg-[#E7E6E2] text-[#3A3F5F]' : 'bg-slate-50 text-slate-600'}`}>
                                                             {interest.type}
                                                         </span>
@@ -394,9 +405,9 @@ const EmployerDashboard = () => {
                                                     interest.scheduledAt ? 'bg-blue-50 text-blue-600 border border-blue-100' :
                                                     'bg-yellow-50 text-yellow-600 border border-yellow-100'
                                                 }`}>
-                                                    {interest.status === 'CALLED' ? 'Meeting Approved ✓' :
-                                                     interest.scheduledAt ? 'Pending Admin Approval' :
-                                                     'Waiting for Command'}
+                                                    {interest.status === 'CALLED' ? 'Interview Scheduled ✓' :
+                                                     interest.scheduledAt ? 'Waiting for Approval' :
+                                                     'Pending'}
                                                 </span>
                                                 )}
                                                 <button 
@@ -416,9 +427,9 @@ const EmployerDashboard = () => {
 
                 {activeTab === 'team' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
-                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Deployed Workforce</h2>
+                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Your Team</h2>
                         {data.contracts.length === 0 ? (
-                            <div className="p-20 rounded-[40px] border border-dashed border-[#32312D]/20 bg-[#E7E6E2]/20 text-center text-slate-400 font-black uppercase text-[10px] tracking-widest">No active resource links established</div>
+                            <div className="p-20 rounded-[40px] border border-dashed border-[#32312D]/20 bg-[#E7E6E2]/20 text-center text-slate-400 font-black uppercase text-[10px] tracking-widest">No active contracts</div>
                         ) : (
                             <div className="grid gap-6">
                                 {data.contracts.map((contract: any) => (
@@ -435,7 +446,7 @@ const EmployerDashboard = () => {
                                                 </div>
                                             </div>
                                             <div className="flex gap-4">
-                                                <Link href={`/dashboard/employer/contracts/${contract.id}`} className="bg-slate-50 border border-slate-200 text-slate-600 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all">Manage Node</Link>
+                                                <Link href={`/dashboard/employer/contracts/${contract.id}`} className="bg-slate-50 border border-slate-200 text-slate-600 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all">Manage Contract</Link>
                                                 <button 
                                                     onClick={async () => {
                                                         if(confirm('Generate monthly invoice for this contract?')) {
@@ -446,7 +457,7 @@ const EmployerDashboard = () => {
                                                     }}
                                                     className="bg-[#3A3F5F] text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#3A3F5F]/90 shadow-lg shadow-[#3A3F5F]/20 transition-all"
                                                 >
-                                                    Invoice Resource
+                                                    Create Invoice
                                                 </button>
                                             </div>
                                         </div>
@@ -459,18 +470,18 @@ const EmployerDashboard = () => {
 
                 {activeTab === 'billing' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
-                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Fiscal Ledger</h2>
+                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Billing History</h2>
                         {data.invoices.length === 0 ? (
-                            <div className="p-20 rounded-[40px] border border-dashed border-[#32312D]/20 bg-[#E7E6E2]/20 text-center text-slate-400 font-black uppercase text-[10px] tracking-widest">No transaction history recorded</div>
+                            <div className="p-20 rounded-[40px] border border-dashed border-[#32312D]/20 bg-[#E7E6E2]/20 text-center text-slate-400 font-black uppercase text-[10px] tracking-widest">No billing history</div>
                         ) : (
                             <div className="bg-white rounded-[32px] border border-[#32312D]/5 overflow-hidden shadow-sm">
                                 <table className="w-full text-left">
                                     <thead className="bg-[#E7E6E2]/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                                         <tr>
-                                            <th className="px-8 py-6">Ledger ID</th>
-                                            <th className="px-8 py-6">Resource Node</th>
-                                            <th className="px-8 py-6 text-right">Debit</th>
-                                            <th className="px-8 py-6">Verification</th>
+                                            <th className="px-8 py-6">Invoice ID</th>
+                                            <th className="px-8 py-6">Engineer</th>
+                                            <th className="px-8 py-6 text-right">Amount</th>
+                                            <th className="px-8 py-6">Status</th>
                                             <th className="px-8 py-6 text-right">Actions</th>
                                         </tr>
                                     </thead>
@@ -494,7 +505,7 @@ const EmployerDashboard = () => {
                                                             }}
                                                             className="bg-[#3A3F5F] text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#3A3F5F]/90 transition-all"
                                                         >
-                                                            Clear Debt
+                                                            Pay Now
                                                         </button>
                                                     )}
                                                 </td>
@@ -509,28 +520,28 @@ const EmployerDashboard = () => {
 
                 {activeTab === 'analytics' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
-                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Performance Metrics</h2>
+                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Hiring Analytics</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="bg-white p-10 rounded-[40px] border border-[#32312D]/5 shadow-sm">
-                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Avg Acquisition Time</div>
+                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Avg Time to Hire</div>
                                 <div className="text-5xl font-black text-[#32312D] tracking-tighter">{data.stats?.avgAcquisitionTime || 0} <span className="text-lg text-slate-400">DAYS</span></div>
-                                <div className="mt-6 text-[10px] font-black text-[#3A3F5F] uppercase tracking-widest bg-[#E7E6E2] px-3 py-1.5 rounded-xl inline-block">SYSTEM OPTIMIZED</div>
+                                <div className="mt-6 text-[10px] font-black text-[#3A3F5F] uppercase tracking-widest bg-[#E7E6E2] px-3 py-1.5 rounded-xl inline-block">Optimized</div>
                             </div>
                             <div className="bg-white p-10 rounded-[40px] border border-[#32312D]/5 shadow-sm">
-                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Acceptance Delta</div>
+                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Selection Rate</div>
                                 <div className="text-5xl font-black text-[#3A3F5F] tracking-tighter">{Math.round(data.stats?.acceptanceDelta || 0)}%</div>
-                                <div className="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">REAL-TIME INDEX</div>
+                                <div className="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Rate</div>
                             </div>
                             <div className="bg-white p-10 rounded-[40px] border border-[#32312D]/5 shadow-sm">
-                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">CPU Cost per Hire</div>
+                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Cost per Hire</div>
                                 <div className="text-5xl font-black text-[#32312D] tracking-tighter">${(data.stats?.costPerHire / 1000).toFixed(1)}k</div>
-                                <div className="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">EXCL PLATFORM TAX</div>
+                                <div className="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Excl. Fees</div>
                             </div>
                         </div>
                         <div className="bg-white p-10 rounded-[40px] border border-[#32312D]/5 shadow-sm">
-                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 text-center">Talent Pipeline Throughput</div>
+                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 text-center">Hiring Pipeline</div>
                             <div className="flex flex-col md:flex-row items-center gap-2 h-auto md:h-16">
-                               <div className="w-full md:flex-1 bg-[#3A3F5F] h-16 md:h-full rounded-2xl md:rounded-l-2xl md:rounded-r-none flex items-center justify-center text-[10px] font-black text-white uppercase shadow-lg shadow-[#3A3F5F]/20">Interests ({data.stats?.pipeline?.interests || 0})</div>
+                               <div className="w-full md:flex-1 bg-[#3A3F5F] h-16 md:h-full rounded-2xl md:rounded-l-2xl md:rounded-r-none flex items-center justify-center text-[10px] font-black text-white uppercase shadow-lg shadow-[#3A3F5F]/20">Applicants ({data.stats?.pipeline?.interests || 0})</div>
                                <div className="w-full md:flex-[0.6] bg-slate-100 h-16 md:h-full flex items-center justify-center text-[10px] font-black text-slate-600 uppercase">Interviews ({data.stats?.pipeline?.interviews || 0})</div>
                                <div className="w-full md:flex-[0.2] bg-slate-200 h-16 md:h-full rounded-2xl md:rounded-r-2xl md:rounded-l-none flex items-center justify-center text-[10px] font-black text-slate-400 uppercase">Hired ({data.stats?.pipeline?.hired || 0})</div>
                             </div>
@@ -540,7 +551,7 @@ const EmployerDashboard = () => {
 
                 {activeTab === 'saved' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
-                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Shortlisted Neural Nodes</h2>
+                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Saved Candidates</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {data.savedCandidates.map((cand: any) => (
                                 <div key={cand.id} className="bg-white p-8 rounded-[32px] border border-[#32312D]/5 flex justify-between items-center hover:border-[#32312D]/20 transition-all group shadow-sm">
@@ -563,25 +574,25 @@ const EmployerDashboard = () => {
                 {activeTab === 'workspace' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="flex items-center justify-between mb-8">
-                            <h2 className="text-2xl font-black uppercase tracking-tight text-[#32312D]">Team Workspace</h2>
+                            <h2 className="text-2xl font-black uppercase tracking-tight text-[#32312D]">Messages</h2>
                             <div className="h-px flex-1 mx-8 bg-[#32312D]/10"></div>
                             <span className="text-[10px] font-black text-[#32312D]/30 uppercase tracking-widest flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span>
-                                Live Channel
+                                Active Chat
                             </span>
                         </div>
 
                         {data.contracts.length === 0 ? (
                             <div className="p-20 rounded-[40px] border border-dashed border-[#32312D]/10 bg-white/50 text-center">
                                 <div className="text-4xl mb-4 opacity-20 grayscale">💬</div>
-                                <div className="text-[#32312D]/40 font-black uppercase text-[10px] tracking-widest">No active contracts. Hire an engineer to start collaborating.</div>
+                                <div className="text-[#32312D]/40 font-black uppercase text-[10px] tracking-widest">No active contracts. Hire an engineer to start chatting.</div>
                             </div>
                         ) : (
                             <div className="bg-white rounded-[40px] border border-[#32312D]/10 shadow-sm overflow-hidden flex h-[70vh]">
                                 {/* Engineer List Sidebar */}
                                 <div className="w-72 shrink-0 border-r border-[#32312D]/8 flex flex-col">
                                     <div className="p-6 border-b border-[#32312D]/8">
-                                        <div className="text-[8px] font-black text-[#32312D]/30 uppercase tracking-[0.3em]">Your Engineers</div>
+                                        <div className="text-[8px] font-black text-[#32312D]/30 uppercase tracking-[0.3em]">Your Team</div>
                                     </div>
                                     <div className="overflow-y-auto flex-1">
                                         {data.contracts.map((contract: any) => (
@@ -594,7 +605,7 @@ const EmployerDashboard = () => {
                                                     👤
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <div className="font-black text-[#32312D] text-xs uppercase tracking-tight truncate">{contract.engineer?.fullName || 'Anonymous Node'}</div>
+                                                    <div className="font-black text-[#32312D] text-xs uppercase tracking-tight truncate">{contract.engineer?.fullName || 'Anonymous Engineer'}</div>
                                                     <div className={`text-[8px] font-black uppercase tracking-widest mt-0.5 ${contract.status === 'ACTIVE' ? 'text-emerald-500' : 'text-[#32312D]/30'}`}>{contract.status}</div>
                                                 </div>
                                             </button>
@@ -607,7 +618,7 @@ const EmployerDashboard = () => {
                                     {!selectedEngineer ? (
                                         <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 p-10">
                                             <div className="w-20 h-20 rounded-[28px] bg-[#E7E6E2] flex items-center justify-center text-4xl">💬</div>
-                                            <div className="text-[10px] font-black text-[#32312D]/30 uppercase tracking-widest">Select an engineer to start communicating</div>
+                                            <div className="text-[10px] font-black text-[#32312D]/30 uppercase tracking-widest">Select an engineer to start chatting</div>
                                         </div>
                                     ) : (
                                         <>
@@ -617,9 +628,9 @@ const EmployerDashboard = () => {
                                                     👤
                                                 </div>
                                                 <div>
-                                                    <div className="font-black text-[#32312D] uppercase text-sm tracking-tight">{selectedEngineer?.fullName || 'Platform Engineer'}</div>
+                                                    <div className="font-black text-[#32312D] uppercase text-sm tracking-tight">{selectedEngineer?.fullName || 'Engineer'}</div>
                                                     <div className="text-[8px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span> Active Channel
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span> Active Chat
                                                     </div>
                                                 </div>
                             </div>
@@ -674,12 +685,12 @@ const EmployerDashboard = () => {
                 {activeTab === 'profile' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-12">
                         <div className="bg-white p-10 rounded-[40px] border border-[#32312D]/5 shadow-sm">
-                            <h2 className="text-3xl font-black mb-10 tracking-tight uppercase text-[#32312D]">Corporate Metadata</h2>
+                            <h2 className="text-3xl font-black mb-10 tracking-tight uppercase text-[#32312D]">Company Information</h2>
                             <form onSubmit={handleProfileSave} className="space-y-10">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                     <div className="space-y-8">
                                         <div className="space-y-3 text-left">
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Entity Name</label>
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Company Name</label>
                                             <input
                                                 type="text"
                                                 className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] uppercase text-xs tracking-widest"
@@ -689,7 +700,7 @@ const EmployerDashboard = () => {
                                             />
                                         </div>
                                         <div className="space-y-3 text-left">
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Neural Link (URL)</label>
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Website (URL)</label>
                                             <input
                                                 type="text"
                                                 className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] text-xs tracking-widest"
@@ -699,7 +710,7 @@ const EmployerDashboard = () => {
                                             />
                                         </div>
                                         <div className="space-y-3 text-left">
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">HQ Node Location</label>
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Office Location</label>
                                             <input
                                                 type="text"
                                                 className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] uppercase text-xs tracking-widest"
@@ -709,7 +720,7 @@ const EmployerDashboard = () => {
                                             />
                                         </div>
                                         <div className="space-y-3 text-left">
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Industry Sector</label>
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Industry</label>
                                             <input
                                                 type="text"
                                                 className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-bold text-[#32312D] uppercase text-xs tracking-widest"
@@ -722,7 +733,7 @@ const EmployerDashboard = () => {
 
                                     <div className="space-y-8">
                                         <div className="space-y-3 text-left">
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Operational Bio</label>
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Company Description</label>
                                             <textarea
                                                 className="w-full px-6 py-4 bg-[#E7E6E2]/20 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-medium text-slate-600 h-[230px] resize-none"
                                                 value={profile?.description || ''}
@@ -735,14 +746,14 @@ const EmployerDashboard = () => {
 
                                 <div className="pt-10 border-t border-[#E7E6E2] flex flex-col md:flex-row justify-between items-center gap-8">
                                     <div className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest">
-                                        Sync Status: <span className={savingProfile ? 'text-[#3A3F5F] animate-pulse' : 'text-emerald-600'}>{savingProfile ? 'Broadcasting...' : 'Stable'}</span>
+                                        Status: <span className={savingProfile ? 'text-[#3A3F5F] animate-pulse' : 'text-emerald-600'}>{savingProfile ? 'Saving...' : 'Saved'}</span>
                                     </div>
                                     <button
                                         type="submit"
                                         disabled={savingProfile}
                                         className="w-full md:w-auto bg-[#3A3F5F] text-white px-20 py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] hover:bg-[#3A3F5F]/90 shadow-lg shadow-[#3A3F5F]/20 transition-all disabled:opacity-50"
                                     >
-                                        {savingProfile ? 'Syncing...' : 'Overwrite Entity Metadata'}
+                                        {savingProfile ? 'Saving...' : 'Update Company Info'}
                                     </button>
                                 </div>
                             </form>

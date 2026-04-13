@@ -72,8 +72,8 @@ export default function EngineerProfilePage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#E7E6E2] text-slate-600"><Navbar /><div className="p-20 text-center text-[#3A3F5F] font-black uppercase tracking-[0.3em] animate-pulse">Decrypting Dossier...</div></div>;
-  if (!engineer) return <div className="min-h-screen bg-[#E7E6E2] text-slate-600"><Navbar /><div className="p-20 text-center text-red-400 font-black uppercase tracking-widest">Access Denied: Subject Not Found</div></div>;
+  if (loading) return <div className="min-h-screen bg-[#E7E6E2] text-slate-600"><Navbar /><div className="p-20 text-center text-[#3A3F5F] font-black uppercase tracking-[0.3em] animate-pulse">Loading Profile...</div></div>;
+  if (!engineer) return <div className="min-h-screen bg-[#E7E6E2] text-slate-600"><Navbar /><div className="p-20 text-center text-red-400 font-black uppercase tracking-widest">Error: Engineer Not Found</div></div>;
 
   return (
     <div className="min-h-screen bg-[#E7E6E2] text-slate-600 pb-32">
@@ -88,10 +88,10 @@ export default function EngineerProfilePage() {
                   </div>
                   <div className="text-left">
                       <div className="flex items-center gap-4 mb-4">
-                        <span className="bg-[#3A3F5F]/10 text-[#3A3F5F] text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest border border-[#3A3F5F]/20">Verified Asset</span>
+                        <span className="bg-[#3A3F5F]/10 text-[#3A3F5F] text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest border border-[#3A3F5F]/20">Verified Engineer</span>
                         {engineer.isFeatured && <span className="bg-[#32312D] text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">Elite Featured</span>}
                       </div>
-                      <h1 className="text-6xl font-black text-[#32312D] uppercase tracking-tighter mb-2">Verified Specialist {engineer.id.slice(0, 5).toUpperCase()}</h1>
+                      <h1 className="text-6xl font-black text-[#32312D] uppercase tracking-tighter mb-2">Engineer {engineer.id.slice(0, 5).toUpperCase()}</h1>
                       <p className="text-slate-400 text-lg font-black uppercase tracking-[0.2em]">{engineer.country} • {engineer.yearsExperience}yr Experience</p>
                   </div>
               </div>
@@ -118,7 +118,7 @@ export default function EngineerProfilePage() {
               <div className="mb-20">
                 <div className="flex items-center gap-4 mb-8 text-left">
                     <div className="w-2 h-2 rounded-full bg-[#3A3F5F] animate-ping"></div>
-                    <h2 className="text-xl font-black text-[#32312D] uppercase tracking-widest">Intelligence Briefing</h2>
+                    <h2 className="text-xl font-black text-[#32312D] uppercase tracking-widest">Introduction Video</h2>
                 </div>
                 <div className="bg-white rounded-[50px] overflow-hidden border border-[#32312D]/10 shadow-2xl aspect-video relative group">
                   <video 
@@ -175,13 +175,13 @@ export default function EngineerProfilePage() {
                             <div className="absolute inset-0 bg-[#3A3F5F]/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             <div className="relative z-10">
                                 <div className="text-4xl mb-4">🏆</div>
-                                <div className="text-[#32312D] font-black uppercase text-xs tracking-widest mb-4">Standard Certification Node</div>
+                                <div className="text-[#32312D] font-black uppercase text-xs tracking-widest mb-4">Certification</div>
                                 <Link 
                                     href={getFileUrl(engineer.certifications)} 
                                     target="_blank"
                                     className="inline-block text-[#3A3F5F] text-[10px] font-black uppercase tracking-widest border-b border-[#3A3F5F] pb-1 hover:text-[#3A3F5F]/80 hover:border-[#3A3F5F]/80 transition-all"
                                 >
-                                    Review Document →
+                                    View Document →
                                 </Link>
                             </div>
                         </div>
@@ -193,8 +193,8 @@ export default function EngineerProfilePage() {
         {/* RIGHT COLUMN: ACTIONS */}
         <div className="lg:col-span-4">
             <div className="bg-white p-12 rounded-[50px] border border-[#32312D]/10 shadow-2xl sticky top-32 text-left">
-                <h3 className="text-2xl font-black text-[#32312D] uppercase tracking-tighter mb-2">Establish Connection</h3>
-                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-10 leading-loose">Initiate secure protocols for asset acquisition.</p>
+                <h3 className="text-2xl font-black text-[#32312D] uppercase tracking-tighter mb-2">Contact Engineer</h3>
+                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-10 leading-loose">Apply to work with this engineer.</p>
                 
                 {user?.role === 'EMPLOYER' ? (
                   <div className="flex flex-col gap-4">
@@ -219,7 +219,7 @@ export default function EngineerProfilePage() {
                   <div className="text-center">
                     <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-8 leading-loose">Authorization required to engage with elite talent.</p>
                     <Link href="/login" className="block w-full bg-[#32312D] text-white py-6 rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-black transition-all">
-                      Authenticate
+                      Log In
                     </Link>
                   </div>
                 ) : (
@@ -260,12 +260,12 @@ export default function EngineerProfilePage() {
             <button onClick={() => setShowInterestModal(false)} className="absolute top-10 right-10 text-slate-400 hover:text-[#32312D] transition-colors text-3xl font-light">
               ✕
             </button>
-            <h2 className="text-4xl font-black text-[#32312D] mb-4 uppercase tracking-tighter text-left">Signal Interest</h2>
-            <p className="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-12 text-left">Select the operational node for this engagement.</p>
+            <h2 className="text-4xl font-black text-[#32312D] mb-4 uppercase tracking-tighter text-left">Express Interest</h2>
+            <p className="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-12 text-left">Select the job you are hiring for.</p>
             
             <div className="space-y-8">
               <div className="text-left">
-                <label className="block text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-4">Active Nodes (Jobs)</label>
+                <label className="block text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-4">Your Jobs</label>
                 {myJobs.length > 0 ? (
                     <select 
                         value={selectedJobId} 
@@ -278,21 +278,21 @@ export default function EngineerProfilePage() {
                     </select>
                 ) : (
                     <div className="p-8 bg-[#E7E6E2] border border-dashed border-[#32312D]/10 rounded-3xl text-center">
-                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-6">No active nodes detected.</p>
-                        <button onClick={() => { setShowInterestModal(false); router.push('/dashboard/employer/jobs/new'); }} className="text-[#3A3F5F] text-[10px] font-black uppercase tracking-widest border-b border-[#3A3F5F]">Establish New Node</button>
+                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-6">No active jobs found.</p>
+                        <button onClick={() => { setShowInterestModal(false); router.push('/dashboard/employer/jobs/new'); }} className="text-[#3A3F5F] text-[10px] font-black uppercase tracking-widest border-b border-[#3A3F5F]">Create a Job</button>
                     </div>
                 )}
               </div>
 
               <div className="text-left">
-                <label className="block text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-4">Engagement Protocol</label>
+                <label className="block text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-4">Work Type</label>
                 <div className="grid grid-cols-2 gap-4">
                     <button 
                         onClick={() => setInterestType('LEASE')}
                         className={`p-6 rounded-3xl border-2 transition-all text-left ${interestType === 'LEASE' ? 'border-[#3A3F5F] bg-[#3A3F5F]/5' : 'border-[#32312D]/10 bg-white'}`}
                     >
-                        <div className="text-[#32312D] font-black uppercase text-sm mb-1">Monthly Lease</div>
-                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Managed Execution</div>
+                        <div className="text-[#32312D] font-black uppercase text-sm mb-1">Monthly Contract</div>
+                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ongoing Work</div>
                     </button>
                     <button 
                         onClick={() => setInterestType('FULLTIME')}
@@ -309,7 +309,7 @@ export default function EngineerProfilePage() {
                 disabled={!selectedJobId}
                 className="w-full mt-8 py-6 bg-[#3A3F5F] text-white rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-[#3A3F5F]/90 transition-all shadow-xl shadow-[#3A3F5F]/20 disabled:opacity-20"
               >
-                Broadcast Signal
+                Send Interest
               </button>
             </div>
           </div>
@@ -321,13 +321,13 @@ export default function EngineerProfilePage() {
         <div className="fixed inset-0 bg-[#32312D]/60 backdrop-blur-xl z-50 flex items-center justify-center px-4">
           <div className="bg-white rounded-[60px] p-16 max-lg w-full shadow-2xl border border-[#32312D]/10 text-center">
             <div className="text-6xl mb-8">📡</div>
-            <h2 className="text-4xl font-black text-[#32312D] mb-4 uppercase tracking-tighter">Signal Received</h2>
+            <h2 className="text-4xl font-black text-[#32312D] mb-4 uppercase tracking-tighter">Interest Sent</h2>
             <p className="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-12 leading-loose">
-                Interest has been logged. Finalize the match by establishing a window for the technical briefing.
+                Your interest has been recorded. Please choose a time for a meeting.
             </p>
             
             <div className="mb-12 text-left">
-                <label className="block text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-4">Briefing Window (Date & Time)</label>
+                <label className="block text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-4">Meeting Time</label>
                 <input 
                     type="datetime-local" 
                     className="w-full bg-[#E7E6E2] border-b-2 border-[#32312D]/10 py-6 text-[#32312D] outline-none focus:border-[#3A3F5F] transition-all font-black uppercase text-xs tracking-widest"
@@ -347,7 +347,7 @@ export default function EngineerProfilePage() {
                     onClick={() => setShowScheduleModal(false)}
                     className="w-full py-6 text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] hover:text-[#32312D] transition-colors"
                 >
-                    Establish Later
+                    Decide Later
                 </button>
             </div>
           </div>

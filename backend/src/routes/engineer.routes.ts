@@ -21,6 +21,8 @@ router.get('/stats', protect, engineer, getEngineerStats);
 router.get('/suggested-jobs', protect, engineer, getSuggestedJobs);
 router.get('/timesheets', protect, engineer, getTimesheets);
 router.get('/endorsements', protect, engineer, getEndorsements);
+router.get('/interviews', protect, engineer, getEngineerInterviews);
+router.get('/my-employers', protect, engineer, getMyEmployers);
 router.patch('/profile', protect, engineer, upload.fields([
   { name: 'resume', maxCount: 1 },
   { name: 'video', maxCount: 1 },

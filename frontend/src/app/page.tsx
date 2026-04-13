@@ -62,9 +62,9 @@ const LandingPage = () => {
           <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12 text-left">
               {[
                   { label: 'Network Value', value: '$2.4B+', desc: 'aggregate capital managed' },
-                  { label: 'Vetting Rigor', value: '0.8%', desc: 'acceptance threshold' },
+                  { label: 'Selection Standards', value: '0.8%', desc: 'acceptance threshold' },
                   { label: 'Retention', value: '99.2%', desc: 'deployment success rate' },
-                  { label: 'Uplink Speed', value: '< 2hr', desc: 'concierge response' },
+                  { label: 'Response Time', value: '< 2hr', desc: 'support response' },
               ].map((stat, i) => (
                   <div key={i} className="group border-l border-[#32312D]/10 pl-8">
                       <div className="text-[10px] font-black text-[#3A3F5F] uppercase tracking-[0.3em] mb-4">{stat.label}</div>
@@ -80,7 +80,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-12">
             <div className="max-w-2xl text-left">
-                <span className="text-[#3A3F5F] font-black uppercase text-[10px] tracking-[0.4em] block mb-4">The Talent Roster</span>
+                <span className="text-[#3A3F5F] font-black uppercase text-[10px] tracking-[0.4em] block mb-4">Our Engineers</span>
                 <h2 className="text-6xl font-black text-[#32312D] tracking-tighter uppercase">Vetted AI <br/>Engineering.</h2>
             </div>
             <Link href="/engineers" className="text-[#3A3F5F] font-black uppercase text-[10px] tracking-[0.3em] border-b-2 border-[#3A3F5F] pb-2 hover:text-[#3A3F5F]/80 hover:border-[#3A3F5F]/80 transition-all">View Full Network →</Link>
@@ -99,7 +99,7 @@ const LandingPage = () => {
                         <span key={j} className="text-[9px] font-black uppercase tracking-widest bg-[#E7E6E2] text-slate-500 px-4 py-1.5 rounded-full border border-[#32312D]/5">{s.trim()}</span>
                     ))}
                 </div>
-                <Link href={`/engineers/${eng.id}`} className="block font-black text-[#3A3F5F] uppercase text-[10px] tracking-[0.3em] hover:underline underline-offset-8">Audit Node Profile</Link>
+                <Link href={`/engineers/${eng.id}`} className="block font-black text-[#3A3F5F] uppercase text-[10px] tracking-[0.3em] hover:underline underline-offset-8">View Profile</Link>
               </div>
             ))}
           </div>
@@ -111,8 +111,8 @@ const LandingPage = () => {
           <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-px bg-[#32312D]/10 rounded-[60px] overflow-hidden border border-[#32312D]/10 shadow-xl">
               {[
                   { title: 'Architectural Review', desc: 'Expert validation of AI systems for enterprise deployment.', icon: '🏛️' },
-                  { title: 'Bespoke LLM Training', desc: 'Custom model development optimized for niche domains.', icon: '⚡' },
-                  { title: 'Neural Infrastructure', desc: 'Managed execution environments for high-stakes production.', icon: '🛰️' },
+                  { title: 'Custom AI Training', desc: 'Custom model development optimized for niche domains.', icon: '⚡' },
+                  { title: 'AI Infrastructure', desc: 'Managed execution environments for high-stakes production.', icon: '🛰️' },
               ].map((s, i) => (
                   <div key={i} className="bg-white p-20 hover:bg-[#E7E6E2] transition-all group text-left">
                       <div className="text-5xl mb-8 grayscale group-hover:grayscale-0 transition-all">{s.icon}</div>
@@ -125,13 +125,13 @@ const LandingPage = () => {
 
       {/* 5. VETTING PROCESS */}
       <section className="py-40 px-6 md:px-12 max-w-7xl mx-auto text-center">
-          <h2 className="text-5xl font-black text-[#32312D] mb-24 tracking-tighter uppercase">The Vetting Protocol</h2>
+          <h2 className="text-5xl font-black text-[#32312D] mb-24 tracking-tighter uppercase">Our Selection Process</h2>
           <div className="grid md:grid-cols-4 gap-8">
               {[
                   { step: '01', title: 'Tech Review', desc: 'Analysis of past algorithmic contributions.' },
                   { step: '02', title: 'Live Benchmarking', desc: 'Scrutinized performance testing in production.' },
                   { step: '03', title: 'EQ Scoping', desc: 'Assessment of leadership & strategic communication.' },
-                  { step: '04', title: 'Final Induction', desc: 'Board review & permanent roster placement.' },
+                  { step: '04', title: 'Final Approval', desc: 'Board review & permanent engineer placement.' },
               ].map((v, i) => (
                   <div key={i} className="relative p-10 bg-white border border-[#32312D]/10 rounded-[40px] hover:border-[#3A3F5F] transition-all shadow-sm text-left">
                       <div className="text-4xl font-black text-[#DDDDDD] absolute top-6 right-8 leading-none">{v.step}</div>
@@ -170,12 +170,12 @@ const LandingPage = () => {
 
       {/* 8. FAQ */}
       <section className="py-40 px-6 md:px-12 max-w-4xl mx-auto">
-          <h2 className="text-4xl font-black text-[#32312D] mb-20 tracking-tighter text-center uppercase tracking-widest">Inquiries</h2>
+          <h2 className="text-4xl font-black text-[#32312D] mb-20 tracking-tighter text-center uppercase tracking-widest">Common Questions</h2>
           <div className="space-y-12 text-left">
               {[
                   { q: 'How exclusive is the Talent Bridge network?', a: 'We represent fewer than 500 engineers globally, ensuring unparalleled quality control.' },
                   { q: 'What is the cost of entry?', a: 'Our engagements start at $15k/mo, reflecting the elite caliber of our talent pool.' },
-                  { q: 'Can we hire for full-time equity roles?', a: 'Yes, our direct-hire protocol handles executive-level AI placements with full vesting support.' },
+                  { q: 'Can we hire for full-time equity roles?', a: 'Yes, our direct-hire process handles executive-level AI placements with full vesting support.' },
               ].map((item, i) => (
                   <div key={i} className="border-b border-[#32312D]/10 pb-12 group cursor-pointer">
                       <div className="text-[#3A3F5F] font-black uppercase tracking-[0.3em] text-xs mb-4">{item.q}</div>
@@ -191,8 +191,8 @@ const LandingPage = () => {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#3A3F5F]/5 rounded-full blur-[120px]"></div>
           <h2 className="text-6xl md:text-9xl font-black text-[#32312D] mb-16 tracking-tighter relative uppercase">COMMAND <br/>THE FUTURE.</h2>
           <div className="flex flex-col sm:flex-row gap-10 justify-center items-center relative">
-              <Link href="/signup" className="w-full sm:w-auto bg-[#3A3F5F] text-white px-16 py-6 rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-[#3A3F5F]/90 transition-all shadow-xl shadow-[0_0_30px_rgba(58,63,95,0.1)]">Establish Presence</Link>
-              <Link href="/engineers" className="w-full sm:w-auto text-[#3A3F5F] border-2 border-[#32312D]/10 px-16 py-6 rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-[#E7E6E2] transition-all">Secure Talent</Link>
+              <Link href="/signup" className="w-full sm:w-auto bg-[#3A3F5F] text-white px-16 py-6 rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-[#3A3F5F]/90 transition-all shadow-xl shadow-[0_0_30px_rgba(58,63,95,0.1)]">Join Now</Link>
+              <Link href="/engineers" className="w-full sm:w-auto text-[#3A3F5F] border-2 border-[#32312D]/10 px-16 py-6 rounded-full font-black uppercase text-xs tracking-[0.3em] hover:bg-[#E7E6E2] transition-all">Hire Talent</Link>
           </div>
         </div>
       </section>
@@ -203,22 +203,22 @@ const LandingPage = () => {
             <div className="grid md:grid-cols-4 gap-20 mb-20 text-left">
                 <div className="col-span-1 md:col-span-2">
                     <div className="text-2xl font-black text-[#3A3F5F] mb-10 tracking-tighter">TALENT BRIDGE</div>
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] max-w-sm leading-loose">The premier global sanctuary for elite AI intelligence. Established 2026. San Francisco. London. Tokyo.</p>
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] max-w-sm leading-loose">The premier global network for elite AI intelligence. Established 2026. San Francisco. London. Tokyo.</p>
                 </div>
                 <div>
                     <div className="text-[10px] font-black text-[#32312D] uppercase tracking-[0.4em] mb-10">Access</div>
                     <ul className="space-y-6 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
-                        <li><Link href="/engineers" className="hover:text-[#3A3F5F] transition-all">The Roster</Link></li>
-                        <li><Link href="/solutions" className="hover:text-[#3A3F5F] transition-all">Protocols</Link></li>
+                        <li><Link href="/engineers" className="hover:text-[#3A3F5F] transition-all">Our Engineers</Link></li>
+                        <li><Link href="/solutions" className="hover:text-[#3A3F5F] transition-all">How it Works</Link></li>
                         <li><Link href="/partners" className="hover:text-[#3A3F5F] transition-all">Alliances</Link></li>
                     </ul>
                 </div>
                 <div>
                     <div className="text-[10px] font-black text-[#32312D] uppercase tracking-[0.4em] mb-10">Legal</div>
                     <ul className="space-y-6 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
-                        <li><Link href="/terms" className="hover:text-[#3A3F5F] transition-all">Terms of Accord</Link></li>
-                        <li><Link href="/privacy" className="hover:text-[#3A3F5F] transition-all">Privacy Shield</Link></li>
-                        <li><Link href="/contact" className="hover:text-[#3A3F5F] transition-all">Concierge</Link></li>
+                        <li><Link href="/terms" className="hover:text-[#3A3F5F] transition-all">Terms of Service</Link></li>
+                        <li><Link href="/privacy" className="hover:text-[#3A3F5F] transition-all">Privacy Policy</Link></li>
+                        <li><Link href="/contact" className="hover:text-[#3A3F5F] transition-all">Support</Link></li>
                     </ul>
                 </div>
             </div>

@@ -42,7 +42,6 @@ const AdminDashboard = () => {
     setFetching(true);
     try {
       if (activeTab === 'stats') {
-        // Fetch everything needed for the stats tab in parallel
         const [statsRes, engineersRes, logsRes] = await Promise.all([
           api.get('/admin/stats'),
           api.get('/admin/engineers'),
@@ -53,7 +52,6 @@ const AdminDashboard = () => {
         const allEngineers: any[] = engineersRes.data || [];
         const allLogs: any[] = logsRes.data || [];
 
-        // Build real security alerts from recent relevant log events
         const alertKeywords = ['login', 'registration', 'admin', 'password', 'failed'];
         const relevantLogs = allLogs
           .filter((l: any) => alertKeywords.some(kw => (l.action || '').toLowerCase().includes(kw) || (l.details || '').toLowerCase().includes(kw)))
@@ -65,12 +63,10 @@ const AdminDashboard = () => {
             time: new Date(l.createdAt).toLocaleString()
           }));
 
-        // If no relevant logs yet, show a clean state
         const securityAlerts = relevantLogs.length > 0
           ? relevantLogs
           : [{ id: 1, type: 'INFO', message: 'No recent security events detected', time: 'Now' }];
 
-        // Derive network growth from real counts
         const totalEngineers = data.totalEngineers || 0;
         const approvedEngineers = allEngineers.filter((e: any) => e.approvalStatus === 'FULLY_APPROVED').length;
         const conversionRate = totalEngineers > 0 ? ((approvedEngineers / totalEngineers) * 100).toFixed(1) + '%' : '0%';
@@ -82,8 +78,8 @@ const AdminDashboard = () => {
           payoutHistory: data.payoutHistory || [],
           securityAlerts,
           referralData: {
-            total: data.totalEmployers || 0,       // employers = impressions/reach
-            successful: approvedEngineers,          // approved engineers = successful inductions
+            total: data.totalEmployers || 0,
+            successful: approvedEngineers,
             conversion: conversionRate
           }
         }));
@@ -254,10 +250,10 @@ const AdminDashboard = () => {
   const handleSaveConfig = async (key: string, value: string) => {
     try {
         await api.patch('/admin/config', { key, value });
-        alert('Internal Protocol Overwritten.');
+        alert('Settings updated.');
         fetchData();
     } catch (err) {
-        alert('Failed to update protocol');
+        alert('Failed to update settings');
     }
   };
 
@@ -265,7 +261,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-[#E7E6E2] flex items-center justify-center text-[#32312D]">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-4 border-[#3A3F5F]/10 border-t-[#3A3F5F] rounded-full animate-spin"></div>
-        <div className="text-[10px] font-black uppercase tracking-[0.3em]">Accessing Command Core...</div>
+        <div className="text-[10px] font-black uppercase tracking-[0.3em]">Loading Dashboard...</div>
       </div>
     </div>
   );
@@ -273,20 +269,19 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-[#E7E6E2] text-[#32312D] flex flex-col font-sans selection:bg-[#3A3F5F] selection:text-white">
       
-      
       <main className="max-w-[1600px] mx-auto w-full px-6 py-12 flex-1">
         {/* Header Section */}
         <div className="relative mb-12 p-10 rounded-[40px] bg-white border border-[#32312D]/10 shadow-sm overflow-hidden group text-left">
             <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
                 <div>
                     <div className="flex items-center gap-3 mb-4">
-                        <span className="px-3 py-1 bg-[#3A3F5F]/5 border border-[#3A3F5F]/10 rounded-full text-[10px] font-black uppercase tracking-widest text-[#3A3F5F]">Command Center v4.0</span>
+                        <span className="px-3 py-1 bg-[#3A3F5F]/5 border border-[#3A3F5F]/10 rounded-full text-[10px] font-black uppercase tracking-widest text-[#3A3F5F]">Admin Dashboard</span>
                         <span className="w-2 h-2 rounded-full bg-[#3A3F5F] animate-pulse"></span>
                     </div>
                     <h1 className="text-5xl font-black mb-3 tracking-tighter uppercase text-[#32312D]">
                         Admin Dashboard
                     </h1>
-                    <p className="text-[#32312D]/40 font-medium text-lg uppercase tracking-widest text-xs">Governance & Infrastructure Management</p>
+                    <p className="text-[#32312D]/40 font-medium text-lg uppercase tracking-widest text-xs">System Administration</p>
                 </div>
 
                 <div className="flex flex-wrap gap-4">
@@ -294,10 +289,10 @@ const AdminDashboard = () => {
                         onClick={() => setShowBroadcastModal(true)}
                         className="bg-white border border-[#32312D]/10 text-[#32312D]/60 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-[#3A3F5F] transition-all flex items-center gap-3 shadow-sm"
                     >
-                        <span className="text-[#3A3F5F]">📢</span> Global Broadcast
+                        <span className="text-[#3A3F5F]">📢</span> Send Notification
                     </button>
                     <div className="bg-[#3A3F5F]/5 px-8 py-4 rounded-2xl border border-[#3A3F5F]/10 min-w-[200px]">
-                        <div className="text-[8px] font-black text-[#3A3F5F] uppercase tracking-[0.2em] mb-1 text-left">Aggregate Marketplace GMV</div>
+                        <div className="text-[8px] font-black text-[#3A3F5F] uppercase tracking-[0.2em] mb-1 text-left">Total Sales</div>
                         <div className="text-2xl font-black text-[#3A3F5F] text-left">${stats.totalRevenue.toLocaleString()}</div>
                     </div>
                     <LogoutButton />
@@ -308,18 +303,26 @@ const AdminDashboard = () => {
         {/* Sidebar Nav + Content */}
         <div className="flex flex-col lg:flex-row gap-12">
             <aside className="w-full lg:w-64 space-y-2">
-                {['stats', 'interests', 'jobs', 'engineers', 'employers', 'logs', 'settings'].map((tab) => (
+                {[
+                  { id: 'stats', label: 'Stats' },
+                  { id: 'interests', label: 'Meetings' },
+                  { id: 'jobs', label: 'Jobs' },
+                  { id: 'engineers', label: 'Engineers' },
+                  { id: 'employers', label: 'Businesses' },
+                  { id: 'logs', label: 'Logs' },
+                  { id: 'settings', label: 'Settings' }
+                ].map((tab) => (
                     <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab as any)}
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
                         className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.15em] transition-all group ${
-                            activeTab === tab 
+                            activeTab === tab.id 
                             ? 'bg-[#3A3F5F] text-white shadow-lg shadow-[#3A3F5F]/20' 
                             : 'text-[#32312D]/40 hover:text-[#32312D] hover:bg-white'
                         }`}
                     >
-                        {tab}
-                        <span className={`w-1.5 h-1.5 rounded-full transition-all ${activeTab === tab ? 'bg-white' : 'bg-transparent group-hover:bg-[#3A3F5F]'}`}></span>
+                        {tab.label}
+                        <span className={`w-1.5 h-1.5 rounded-full transition-all ${activeTab === tab.id ? 'bg-white' : 'bg-transparent group-hover:bg-[#3A3F5F]'}`}></span>
                     </button>
                 ))}
             </aside>
@@ -329,10 +332,10 @@ const AdminDashboard = () => {
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-12">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             {[
-                                { label: 'Gross Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, color: 'text-[#32312D]' },
-                                { label: 'Active Contracts', value: stats.activeContracts, color: 'text-[#3A3F5F]' },
-                                { label: 'Deployment Signals', value: stats.totalJobs, color: 'text-[#32312D]' },
-                                { label: 'Verified Nodes', value: stats.totalEngineers, color: 'text-[#32312D]' }
+                                { label: 'Total Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, color: 'text-[#32312D]' },
+                                { label: 'Active Jobs', value: stats.activeContracts, color: 'text-[#3A3F5F]' },
+                                { label: 'Job Postings', value: stats.totalJobs, color: 'text-[#32312D]' },
+                                { label: 'Verified Engineers', value: stats.totalEngineers, color: 'text-[#32312D]' }
                             ].map((item, i) => (
                                 <div key={i} className="bg-white p-8 rounded-[32px] border border-[#32312D]/10 shadow-sm text-left">
                                     <div className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest mb-2">{item.label}</div>
@@ -345,9 +348,9 @@ const AdminDashboard = () => {
                             <div className="bg-white p-8 rounded-[32px] border border-red-100 col-span-2 relative overflow-hidden shadow-sm">
                                 <div className="flex justify-between items-center mb-8">
                                     <h3 className="text-xs font-black text-[#32312D] uppercase tracking-[0.2em] flex items-center gap-3 text-left">
-                                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Security Protocols
+                                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> System Security
                                     </h3>
-                                    <button className="text-[10px] font-black text-red-500 uppercase tracking-widest border border-red-100 px-3 py-1 rounded-lg hover:bg-red-50 transition-all">Audit Logs</button>
+                                    <button className="text-[10px] font-black text-red-500 uppercase tracking-widest border border-red-100 px-3 py-1 rounded-lg hover:bg-red-50 transition-all">View Logs</button>
                                 </div>
                                 <div className="space-y-4">
                                     {stats.securityAlerts.map(alert => (
@@ -363,16 +366,16 @@ const AdminDashboard = () => {
                             </div>
 
                             <div className="bg-white p-8 rounded-[32px] border border-[#32312D]/10 shadow-sm text-left">
-                                <div className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest mb-6">Network Growth Index</div>
+                                <div className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest mb-6">Engineer Growth</div>
                                 <div className="text-5xl font-black text-[#3A3F5F] tracking-tighter mb-2">{stats.referralData.successful}</div>
-                                <div className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest mb-8">Verified Inductions</div>
+                                <div className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest mb-8">Approved Engineers</div>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center py-3 border-t border-[#32312D]/5">
-                                        <div className="text-[10px] font-black text-[#32312D]/40 uppercase">Conversion Delta</div>
+                                        <div className="text-[10px] font-black text-[#32312D]/40 uppercase">Approval Rate</div>
                                         <div className="text-xs font-black text-emerald-600">{stats.referralData.conversion}</div>
                                     </div>
                                     <div className="flex justify-between items-center py-3 border-t border-[#32312D]/5">
-                                        <div className="text-[10px] font-black text-[#32312D]/40 uppercase">Total Impressions</div>
+                                        <div className="text-[10px] font-black text-[#32312D]/40 uppercase">Total Applicants</div>
                                         <div className="text-xs font-black text-[#32312D]">{stats.referralData.total}</div>
                                     </div>
                                 </div>
@@ -380,7 +383,7 @@ const AdminDashboard = () => {
                         </div>
 
                         <div className="space-y-8 text-left">
-                            <h2 className="text-2xl font-black uppercase tracking-tight text-[#32312D]">Pending Authorizations</h2>
+                            <h2 className="text-2xl font-black uppercase tracking-tight text-[#32312D]">Pending Approvals</h2>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
                                 {engineers.filter(e => e.approvalStatus === 'PENDING').slice(0, 3).map(eng => (
                                     <div key={eng.id} className="p-px rounded-[32px] bg-[#32312D]/5 hover:bg-[#3A3F5F]/10 transition-all duration-500">
@@ -395,8 +398,8 @@ const AdminDashboard = () => {
                                                 </div>
                                             </div>
                                             <div className="flex gap-3">
-                                                <button onClick={() => setViewingEngineer(eng)} className="flex-1 py-3 bg-[#E7E6E2]/50 border border-[#32312D]/10 rounded-xl text-[10px] font-black uppercase text-[#32312D]/40 hover:text-[#32312D] hover:bg-[#E7E6E2] transition-all shadow-sm">Audit Dossier</button>
-                                                <button onClick={() => handleUpdateEngineerStatus(eng.id, 'ACCEPTED_FOR_INTERVIEW')} className="flex-1 py-3 bg-[#3A3F5F] rounded-xl text-[10px] font-black uppercase text-white hover:bg-[#32312D] transition-all shadow-md">Authorize Call</button>
+                                                <button onClick={() => setViewingEngineer(eng)} className="flex-1 py-3 bg-[#E7E6E2]/50 border border-[#32312D]/10 rounded-xl text-[10px] font-black uppercase text-[#32312D]/40 hover:text-[#32312D] hover:bg-[#E7E6E2] transition-all shadow-sm">Review Profile</button>
+                                                <button onClick={() => handleUpdateEngineerStatus(eng.id, 'ACCEPTED_FOR_INTERVIEW')} className="flex-1 py-3 bg-[#3A3F5F] rounded-xl text-[10px] font-black uppercase text-white hover:bg-[#32312D] transition-all shadow-md">Invite to Interview</button>
                                             </div>
                                         </div>
                                     </div>
@@ -408,14 +411,14 @@ const AdminDashboard = () => {
 
                 {activeTab === 'interests' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8 text-left">
-                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Engagement Queue</h2>
+                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Meeting Requests</h2>
                         <div className="bg-white rounded-[32px] border border-[#32312D]/10 overflow-hidden shadow-sm">
                                 <table className="w-full text-left text-[#32312D]">
                                 <thead className="bg-[#3A3F5F]/5 text-[10px] font-black text-[#32312D]/40 uppercase tracking-[0.2em]">
                                     <tr>
-                                        <th className="px-8 py-6">Corporate Entity</th>
-                                        <th className="px-8 py-6">Target Node</th>
-                                        <th className="px-8 py-6">Protocol</th>
+                                        <th className="px-8 py-6">Company</th>
+                                        <th className="px-8 py-6">Engineer</th>
+                                        <th className="px-8 py-6">Type</th>
                                         <th className="px-8 py-6">Requested Time</th>
                                         <th className="px-8 py-6">Status</th>
                                         <th className="px-8 py-6 text-right">Actions</th>
@@ -457,7 +460,7 @@ const AdminDashboard = () => {
                                             <td className="px-8 py-6 text-right">
                                                 <div className="flex justify-end gap-3">
                                                     {interest.status === 'REJECTED' ? (
-                                                        <span className="px-4 py-2.5 bg-red-50 text-red-400 border border-red-100 rounded-xl font-black text-[10px] uppercase tracking-widest">Meeting Denied</span>
+                                                        <span className="px-4 py-2.5 bg-red-50 text-red-400 border border-red-100 rounded-xl font-black text-[10px] uppercase tracking-widest">Interview Rejected</span>
                                                     ) : interest.joinUrl ? (
                                                         <a 
                                                             href={`https://leadhunter-crm.work.gd${interest.joinUrl}`} 
@@ -465,7 +468,7 @@ const AdminDashboard = () => {
                                                             rel="noopener noreferrer"
                                                             className="bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-sm flex items-center gap-2"
                                                         >
-                                                            <span>🔗</span> Join Room
+                                                            <span>🔗</span> Join Meeting
                                                         </a>
                                                     ) : interest.scheduledAt ? (
                                                         <>
@@ -487,7 +490,7 @@ const AdminDashboard = () => {
                                                             onClick={() => handleCreateMeeting(interest.id)}
                                                             className="bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-sm"
                                                         >
-                                                            Create Room
+                                                            Create Meeting
                                                         </button>
                                                     )}
                                                     {interest.status !== 'REJECTED' && (
@@ -505,15 +508,15 @@ const AdminDashboard = () => {
 
                 {activeTab === 'engineers' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8 text-left">
-                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Operational Node Registry</h2>
+                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Engineer List</h2>
                         <div className="bg-white rounded-[32px] border border-[#32312D]/10 overflow-hidden shadow-sm">
                             <table className="w-full text-left text-[#32312D]">
                                 <thead className="bg-[#3A3F5F]/5 text-[10px] font-black text-[#32312D]/40 uppercase tracking-[0.2em]">
                                     <tr>
-                                        <th className="px-8 py-6">Identifier</th>
+                                        <th className="px-8 py-6">Email/Name</th>
                                         <th className="px-8 py-6">Status</th>
-                                        <th className="px-8 py-6">Protocol</th>
-                                        <th className="px-8 py-6 text-right">Operations</th>
+                                        <th className="px-8 py-6">Type</th>
+                                        <th className="px-8 py-6 text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-[#32312D]/5">
@@ -527,7 +530,7 @@ const AdminDashboard = () => {
                                             </td>
                                             <td className="px-8 py-6">
                                                 <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${eng.approvalStatus === 'FULLY_APPROVED' ? 'bg-emerald-50 text-emerald-600' : 'bg-[#3A3F5F]/5 text-[#3A3F5F]'}`}>
-                                                    {eng.approvalStatus || 'INITIALIZING'}
+                                                    {eng.approvalStatus || 'NEW'}
                                                 </span>
                                                 {eng.disapprovalReason && (
                                                     <div className="text-[8px] text-red-500 mt-1 uppercase font-bold italic">{eng.disapprovalReason}</div>
@@ -554,18 +557,18 @@ const AdminDashboard = () => {
                                                         rel="noopener noreferrer"
                                                         className="bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-sm flex items-center gap-2"
                                                     >
-                                                        <span>🔗</span> Join Room
+                                                        <span>🔗</span> Join Meeting
                                                     </a>
                                                 ) : (
                                                     <button 
                                                         onClick={() => handleCreateEngineerMeeting(eng.id)}
                                                         className="bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-sm"
                                                     >
-                                                        Verify Room
+                                                        Verification Room
                                                     </button>
                                                 )}
                                                 <button onClick={() => handleToggleFeature(eng.id, !eng.isFeatured)} className={`p-2.5 rounded-xl border transition-all ${eng.isFeatured ? 'border-[#3A3F5F]/50 bg-[#3A3F5F]/5 text-[#3A3F5F]' : 'border-[#32312D]/10 bg-[#E7E6E2]/20 text-[#32312D]/20 hover:text-[#32312D]'}`}>★</button>
-                                                <button onClick={() => setViewingEngineer(eng)} className="px-5 py-2.5 bg-[#E7E6E2]/50 border border-[#32312D]/10 rounded-xl text-[10px] font-black uppercase text-[#32312D]/40 hover:text-[#32312D] hover:bg-[#E7E6E2] transition-all">Audit</button>
+                                                <button onClick={() => setViewingEngineer(eng)} className="px-5 py-2.5 bg-[#E7E6E2]/50 border border-[#32312D]/10 rounded-xl text-[10px] font-black uppercase text-[#32312D]/40 hover:text-[#32312D] hover:bg-[#E7E6E2] transition-all">View</button>
                                             </td>
                                         </tr>
                                     ))}
@@ -577,7 +580,7 @@ const AdminDashboard = () => {
 
                 {activeTab === 'employers' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8 text-left">
-                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Corporate Intelligence Roster</h2>
+                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Business List</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {employers.map(emp => (
                                 <div key={emp.id} className="p-px rounded-[32px] bg-[#32312D]/5 hover:bg-[#3A3F5F]/10 transition-all duration-500">
@@ -588,19 +591,19 @@ const AdminDashboard = () => {
                                             </div>
                                             <div className="text-left">
                                                 <div className="font-black text-[#32312D] text-lg tracking-tight uppercase line-clamp-1">{emp.companyName}</div>
-                                                <div className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest">{emp.location || 'Global Node'}</div>
+                                                <div className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest">{emp.location || 'Global'}</div>
                                                 {emp.disapprovalReason && (
                                                     <div className="text-[8px] text-red-500 mt-1 uppercase font-bold italic line-clamp-1">{emp.disapprovalReason}</div>
                                                 )}
                                             </div>
                                         </div>
                                         <div className="flex gap-3 mt-auto">
-                                            <button onClick={() => setViewingEmployer(emp)} className="flex-1 py-3 bg-[#E7E6E2]/50 border border-[#32312D]/10 rounded-xl text-[10px] font-black uppercase text-[#32312D]/40 hover:text-[#32312D] hover:bg-[#E7E6E2] transition-all shadow-sm">Entity Bio</button>
+                                            <button onClick={() => setViewingEmployer(emp)} className="flex-1 py-3 bg-[#E7E6E2]/50 border border-[#32312D]/10 rounded-xl text-[10px] font-black uppercase text-[#32312D]/40 hover:text-[#32312D] hover:bg-[#E7E6E2] transition-all shadow-sm">View Profile</button>
                                             <button 
                                                 onClick={() => handleApproveEmployer(emp.id, !emp.isApproved)}
                                                 className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm ${emp.isApproved ? 'bg-[#3A3F5F] text-white' : 'bg-[#32312D] text-white hover:bg-[#3A3F5F]'}`}
                                             >
-                                                {emp.isApproved ? 'Verified' : 'Authorize'}
+                                                {emp.isApproved ? 'Verified' : 'Approve'}
                                             </button>
                                         </div>
                                     </div>
@@ -612,13 +615,13 @@ const AdminDashboard = () => {
 
                 {activeTab === 'jobs' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8 text-left">
-                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Marketplace Job Queue</h2>
+                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Job List</h2>
                         <div className="bg-white rounded-[32px] border border-[#32312D]/10 overflow-hidden shadow-sm">
                             <table className="w-full text-left text-[#32312D]">
                                 <thead className="bg-[#3A3F5F]/5 text-[10px] font-black text-[#32312D]/40 uppercase tracking-[0.2em]">
                                     <tr>
-                                        <th className="px-8 py-6">Job Title</th>
-                                        <th className="px-8 py-6">Employer</th>
+                                        <th className="px-8 py-6">Job</th>
+                                        <th className="px-8 py-6">Business</th>
                                         <th className="px-8 py-6">Budget</th>
                                         <th className="px-8 py-6">Status</th>
                                         <th className="px-8 py-6 text-right">Actions</th>
@@ -686,14 +689,14 @@ const AdminDashboard = () => {
 
                 {activeTab === 'logs' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8 text-left">
-                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Event Stream Ledger</h2>
+                        <h2 className="text-2xl font-black uppercase tracking-tight mb-8 text-[#32312D]">Activity Log</h2>
                         <div className="bg-white rounded-[32px] border border-[#32312D]/10 overflow-hidden shadow-sm">
                             <table className="w-full text-left text-[#32312D]">
                                 <thead className="bg-[#3A3F5F]/5 text-[10px] font-black text-[#32312D]/40 uppercase tracking-[0.2em]">
                                     <tr>
                                         <th className="px-8 py-6">Timestamp</th>
-                                        <th className="px-8 py-6">Protocol Action</th>
-                                        <th className="px-8 py-6">Source Origin</th>
+                                        <th className="px-8 py-6">Action</th>
+                                        <th className="px-8 py-6">User</th>
                                         <th className="px-8 py-6">Metadata</th>
                                     </tr>
                                 </thead>
@@ -704,7 +707,7 @@ const AdminDashboard = () => {
                                             <td className="px-8 py-6">
                                                 <span className="bg-[#3A3F5F]/5 text-[#3A3F5F] px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border border-[#3A3F5F]/10">{log.action}</span>
                                             </td>
-                                            <td className="px-8 py-6 font-black text-[#32312D] text-[10px] uppercase tracking-tight">{log.user?.email || 'SYSTEM CORE'}</td>
+                                            <td className="px-8 py-6 font-black text-[#32312D] text-[10px] uppercase tracking-tight">{log.user?.email || 'SYSTEM'}</td>
                                             <td className="px-8 py-6 text-[#32312D]/60 text-[10px] font-medium leading-relaxed italic uppercase tracking-tighter">{log.details}</td>
                                         </tr>
                                     ))}
@@ -717,10 +720,10 @@ const AdminDashboard = () => {
                 {activeTab === 'settings' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 grid grid-cols-1 md:grid-cols-2 gap-10 text-left">
                         <div className="bg-white p-10 rounded-[40px] border border-[#32312D]/10 shadow-sm text-left">
-                            <h3 className="text-xl font-black uppercase tracking-tight mb-10 text-[#32312D]">Marketplace Parameters</h3>
+                            <h3 className="text-xl font-black uppercase tracking-tight mb-10 text-[#32312D]">Platform Settings</h3>
                             <div className="space-y-8">
                                 <div className="space-y-3 text-left">
-                                    <label className="block text-[10px] font-black text-[#32312D]/40 uppercase tracking-[0.3em]">Protocol Fee (%)</label>
+                                    <label className="block text-[10px] font-black text-[#32312D]/40 uppercase tracking-[0.3em]">Platform Fee (%)</label>
                                     <input 
                                         type="number" 
                                         value={protocolFee} 
@@ -732,7 +735,7 @@ const AdminDashboard = () => {
                                     onClick={() => handleSaveConfig('protocol_fee', protocolFee)}
                                     className="w-full bg-[#3A3F5F] text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-lg shadow-[#3A3F5F]/20 hover:bg-[#32312D] transition-all"
                                 >
-                                    Overwrite Core Config
+                                    Update Settings
                                 </button>
                             </div>
                         </div>
@@ -742,29 +745,29 @@ const AdminDashboard = () => {
         </div>
       </main>
 
-      {/* Broadcast Modal */}
+      {/* Send Notification Modal */}
       {showBroadcastModal && (
           <div className="fixed inset-0 bg-[#32312D]/60 backdrop-blur-2xl z-50 flex items-center justify-center p-6 animate-in fade-in duration-300">
               <div className="bg-white w-full max-w-2xl rounded-[60px] shadow-2xl p-16 border border-[#32312D]/10 relative">
                   <button onClick={() => setShowBroadcastModal(false)} className="absolute top-10 right-10 text-[#32312D]/40 hover:text-[#32312D] text-3xl transition-colors font-light">✕</button>
-                  <h2 className="text-4xl font-black text-[#32312D] mb-2 uppercase tracking-tighter text-left">Broadcast Signal</h2>
-                  <p className="text-[#32312D]/40 text-[10px] font-black uppercase tracking-[0.3em] mb-12 leading-loose text-left">Transmitting to all active nodes in the Talent Bridge network.</p>
+                  <h2 className="text-4xl font-black text-[#32312D] mb-2 uppercase tracking-tighter text-left">Send Notification</h2>
+                  <p className="text-[#32312D]/40 text-[10px] font-black uppercase tracking-[0.3em] mb-12 leading-loose text-left">Sending a message to everyone in the network.</p>
                   <div className="space-y-10">
                       <div className="space-y-4 text-left">
-                          <label className="block text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest">Protocol Subject</label>
-                          <input type="text" className="w-full px-8 py-5 bg-[#E7E6E2]/30 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-black uppercase text-xs tracking-widest text-[#32312D]" placeholder="TRANSMISSION_ID" />
+                          <label className="block text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest">Subject</label>
+                          <input type="text" className="w-full px-8 py-5 bg-[#E7E6E2]/30 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-black uppercase text-xs tracking-widest text-[#32312D]" placeholder="Subject" />
                       </div>
                       <div className="space-y-4 text-left">
-                          <label className="block text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest">Signal Payload</label>
-                          <textarea className="w-full px-8 py-6 bg-[#E7E6E2]/30 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-medium text-[#32312D]/60 h-48 resize-none" placeholder="Enter payload content..."></textarea>
+                          <label className="block text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest">Message Content</label>
+                          <textarea className="w-full px-8 py-6 bg-[#E7E6E2]/30 border border-[#32312D]/10 rounded-2xl outline-none focus:border-[#3A3F5F] transition-all font-medium text-[#32312D]/60 h-48 resize-none" placeholder="Enter message content..."></textarea>
                       </div>
-                      <button onClick={() => { alert('Signal Broadcasted!'); setShowBroadcastModal(false); }} className="w-full bg-[#3A3F5F] text-white py-6 rounded-3xl font-black uppercase text-[10px] tracking-[0.4em] shadow-lg shadow-[#3A3F5F]/20 hover:bg-[#32312D] transition-all">Initiate Transmission</button>
+                      <button onClick={() => { alert('Notification Sent!'); setShowBroadcastModal(false); }} className="w-full bg-[#3A3F5F] text-white py-6 rounded-3xl font-black uppercase text-[10px] tracking-[0.4em] shadow-lg shadow-[#3A3F5F]/20 hover:bg-[#32312D] transition-all">Send Message</button>
                   </div>
               </div>
           </div>
       )}
 
-      {/* Engineer Audit Modal */}
+      {/* Engineer View Modal */}
       {viewingEngineer && (
           <div className="fixed inset-0 bg-[#32312D]/80 backdrop-blur-2xl z-50 flex items-center justify-center p-6 animate-in fade-in zoom-in-95 duration-300">
               <div className="bg-white w-full max-w-5xl rounded-[50px] shadow-2xl overflow-hidden flex flex-col md:flex-row h-[85vh] border border-[#32312D]/10">
@@ -772,17 +775,17 @@ const AdminDashboard = () => {
                       {viewingEngineer.videoUrl ? (
                           <video src={getFileUrl(viewingEngineer.videoUrl)} controls className="w-full h-full object-contain grayscale" />
                       ) : (
-                          <div className="text-[#32312D]/20 font-black uppercase tracking-[0.5em] text-sm">Uplink Feed Offline</div>
+                          <div className="text-[#32312D]/20 font-black uppercase tracking-[0.5em] text-sm">Video Not Available</div>
                       )}
                       <div className="absolute top-8 left-8 bg-white border border-[#32312D]/10 px-5 py-2.5 rounded-full text-[#3A3F5F] text-[8px] font-black uppercase tracking-[0.3em] shadow-sm">
-                          Live Dossier Preview
+                          Profile Preview
                       </div>
                   </div>
                   <div className="w-full md:w-[450px] p-12 flex flex-col overflow-y-auto bg-white border-l border-[#32312D]/10 text-left">
                       <div className="flex justify-between items-start mb-12">
                           <div className="text-left">
                               <h2 className="text-4xl font-black text-[#32312D] tracking-tighter mb-2 uppercase">{viewingEngineer.fullName}</h2>
-                              <p className="text-[#32312D]/40 font-black uppercase text-[10px] tracking-[0.2em]">{viewingEngineer.country} • NODE_v{viewingEngineer.yearsExperience}.0</p>
+                              <p className="text-[#32312D]/40 font-black uppercase text-[10px] tracking-[0.2em]">{viewingEngineer.country} • Experience: {viewingEngineer.yearsExperience} years</p>
                           </div>
                           <button onClick={() => setViewingEngineer(null)} className="text-[#32312D]/40 hover:text-[#32312D] transition-colors text-2xl font-light">✕</button>
                       </div>
@@ -790,17 +793,17 @@ const AdminDashboard = () => {
                       <div className="space-y-10 flex-1 text-left">
                           <div className="grid grid-cols-2 gap-6">
                               <div className="bg-[#3A3F5F]/5 p-6 rounded-[32px] border border-[#3A3F5F]/10">
-                                  <div className="text-[8px] font-black text-[#3A3F5F] uppercase tracking-widest mb-2">Protocol Status</div>
+                                  <div className="text-[8px] font-black text-[#3A3F5F] uppercase tracking-widest mb-2">Status</div>
                                   <div className="text-[10px] font-black text-[#3A3F5F] uppercase">{viewingEngineer.approvalStatus || 'PENDING'}</div>
                               </div>
                               <div className="bg-[#E7E6E2]/30 p-6 rounded-[32px] border border-[#32312D]/5">
-                                  <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-2">Market Quota</div>
+                                  <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-2">Hourly Rate</div>
                                   <div className="text-sm font-black text-[#32312D]">${viewingEngineer.hourlyRate}/HR</div>
                               </div>
                           </div>
 
                           <div>
-                              <div className="text-[10px] font-black text-[#32312D]/40 uppercase mb-5 tracking-[0.3em]">Core Module Specs</div>
+                              <div className="text-[10px] font-black text-[#32312D]/40 uppercase mb-5 tracking-[0.3em]">Skills</div>
                               <div className="flex flex-wrap gap-2">
                                   {viewingEngineer.aiSpecializations?.split(',').map((s: string, i: number) => (
                                       <span key={i} className="px-4 py-2 bg-[#3A3F5F]/5 text-[#3A3F5F] border border-[#3A3F5F]/10 rounded-xl text-[8px] font-black uppercase tracking-widest">{s.trim()}</span>
@@ -809,17 +812,17 @@ const AdminDashboard = () => {
                           </div>
 
                           <div className="space-y-4">
-                              <div className="text-[10px] font-black text-[#32312D]/40 uppercase mb-5 tracking-[0.3em]">Encrypted Documentation</div>
+                              <div className="text-[10px] font-black text-[#32312D]/40 uppercase mb-5 tracking-[0.3em]">Files</div>
                               {viewingEngineer.resumeUrl && (
                                   <a href={getFileUrl(viewingEngineer.resumeUrl)} target="_blank" className="flex items-center justify-between p-5 bg-white rounded-2xl border border-[#32312D]/10 hover:border-[#3A3F5F] shadow-sm transition-all group">
-                                      <span className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest group-hover:text-[#32312D] transition-colors">Dossier_Link.pdf</span>
+                                      <span className="text-[10px] font-black text-[#32312D]/40 uppercase tracking-widest group-hover:text-[#32312D] transition-colors">Resume.pdf</span>
                                       <span className="text-[#3A3F5F]">→</span>
                                   </a>
                               )}
                           </div>
 
                           <div className="space-y-4 pt-4">
-                              <div className="text-[10px] font-black text-[#32312D]/40 uppercase mb-5 tracking-[0.3em]">Interested Corporate Entities</div>
+                              <div className="text-[10px] font-black text-[#32312D]/40 uppercase mb-5 tracking-[0.3em]">Interested Companies</div>
                               {viewingEngineer.interests && viewingEngineer.interests.length > 0 ? (
                                   <div className="flex flex-col gap-3">
                                       {viewingEngineer.interests.map((interest: any) => (
@@ -835,15 +838,15 @@ const AdminDashboard = () => {
                                       ))}
                                   </div>
                               ) : (
-                                  <div className="text-[#32312D]/30 text-xs font-black uppercase tracking-widest">No interests signaled yet.</div>
+                                  <div className="text-[#32312D]/30 text-xs font-black uppercase tracking-widest">No interests yet.</div>
                               )}
                           </div>
                       </div>
 
                       <div className="pt-12 mt-12 border-t border-[#32312D]/5 text-left">
                           <div className="grid grid-cols-2 gap-4">
-                              <button onClick={() => handleUpdateEngineerStatus(viewingEngineer.id, 'ACCEPTED_FOR_INTERVIEW')} className="bg-[#3A3F5F] text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#32312D] transition-all shadow-md">Invite Uplink</button>
-                              <button onClick={() => handleUpdateEngineerStatus(viewingEngineer.id, 'FULLY_APPROVED')} className="bg-[#32312D] text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#3A3F5F] transition-all shadow-md">Full Activation</button>
+                              <button onClick={() => handleUpdateEngineerStatus(viewingEngineer.id, 'ACCEPTED_FOR_INTERVIEW')} className="bg-[#3A3F5F] text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#32312D] transition-all shadow-md">Invite to Interview</button>
+                              <button onClick={() => handleUpdateEngineerStatus(viewingEngineer.id, 'FULLY_APPROVED')} className="bg-[#32312D] text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#3A3F5F] transition-all shadow-md">Approve Profile</button>
                           </div>
                       </div>
                   </div>
@@ -851,7 +854,7 @@ const AdminDashboard = () => {
           </div>
       )}
 
-      {/* Employer Audit Modal */}
+      {/* Business View Modal */}
       {viewingEmployer && (
           <div className="fixed inset-0 bg-[#32312D]/80 backdrop-blur-2xl z-50 flex items-center justify-center p-6 animate-in fade-in zoom-in-95 duration-300">
               <div className="bg-white w-full max-w-4xl rounded-[60px] shadow-2xl overflow-hidden flex flex-col border border-[#32312D]/10 max-h-[90vh]">
@@ -863,11 +866,11 @@ const AdminDashboard = () => {
                               </div>
                               <div className="text-left">
                                   <div className="flex items-center gap-4 mb-4">
-                                      <span className="bg-[#3A3F5F]/5 text-[#3A3F5F] text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest border border-[#3A3F5F]/10 text-left">Corporate Entity Profile</span>
+                                      <span className="bg-[#3A3F5F]/5 text-[#3A3F5F] text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest border border-[#3A3F5F]/10 text-left">Business Profile</span>
                                       <span className={`w-2 h-2 rounded-full ${viewingEmployer.isApproved ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-orange-400 animate-pulse'} `}></span>
                                   </div>
                                   <h2 className="text-5xl font-black text-[#32312D] tracking-tighter uppercase mb-2 text-left">{viewingEmployer.companyName}</h2>
-                                  <p className="text-[#32312D]/40 font-black uppercase text-xs tracking-[0.3em] text-left">{viewingEmployer.location || 'Global Operations'} • {viewingEmployer.industry || 'Multi-Domain'}</p>
+                                  <p className="text-[#32312D]/40 font-black uppercase text-xs tracking-[0.3em] text-left">{viewingEmployer.location || 'Global'} • {viewingEmployer.industry || 'Multi-Domain'}</p>
                               </div>
                           </div>
                           <button onClick={() => setViewingEmployer(null)} className="text-[#32312D]/40 hover:text-[#32312D] transition-colors text-3xl font-light">✕</button>
@@ -875,11 +878,11 @@ const AdminDashboard = () => {
 
                       <div className="grid md:grid-cols-2 gap-20 text-left">
                           <div className="text-left">
-                              <div className="text-[10px] font-black text-[#3A3F5F] uppercase mb-8 tracking-[0.3em] border-b border-[#32312D]/5 pb-4 text-left">Corporate Intel</div>
+                              <div className="text-[10px] font-black text-[#3A3F5F] uppercase mb-8 tracking-[0.3em] border-b border-[#32312D]/5 pb-4 text-left">Business Details</div>
                               <div className="space-y-10 text-left">
                                   <div className="text-left">
-                                      <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-2 text-left">Mission Brief</div>
-                                      <p className="text-[#32312D]/60 text-sm leading-relaxed uppercase tracking-tighter font-medium text-left">{viewingEmployer.description || 'No public metadata broadcasted for this entity.'}</p>
+                                      <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-2 text-left">Company Description</div>
+                                      <p className="text-[#32312D]/60 text-sm leading-relaxed uppercase tracking-tighter font-medium text-left">{viewingEmployer.description || 'No public information for this business.'}</p>
                                   </div>
                                   <div className="grid grid-cols-2 gap-8 text-left">
                                       <div className="text-left">
@@ -887,8 +890,8 @@ const AdminDashboard = () => {
                                           <div className="text-lg font-black text-[#32312D] text-left">{viewingEmployer.size || 'UNDISCLOSED'}</div>
                                       </div>
                                       <div className="text-left">
-                                          <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-2 text-left">Compliance Node</div>
-                                          <div className={`text-lg font-black ${viewingEmployer.isApproved ? 'text-emerald-600' : 'text-orange-400'} text-left`}>{viewingEmployer.isApproved ? 'AUTHORIZED' : 'PENDING'}</div>
+                                          <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-2 text-left">Status</div>
+                                          <div className={`text-lg font-black ${viewingEmployer.isApproved ? 'text-emerald-600' : 'text-orange-400'} text-left`}>{viewingEmployer.isApproved ? 'APPROVED' : 'PENDING'}</div>
                                       </div>
                                       <div className="text-left col-span-2">
                                           <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-2 text-left">Business Registration</div>
@@ -899,16 +902,16 @@ const AdminDashboard = () => {
                           </div>
 
                           <div className="text-left">
-                              <div className="text-[10px] font-black text-[#3A3F5F] uppercase mb-8 tracking-[0.3em] border-b border-[#32312D]/5 pb-4 text-left">Secure Protocols</div>
+                              <div className="text-[10px] font-black text-[#3A3F5F] uppercase mb-8 tracking-[0.3em] border-b border-[#32312D]/5 pb-4 text-left">Contact Info</div>
                               <div className="space-y-6 text-left">
                                   <div className="p-8 bg-[#E7E6E2]/30 border border-[#32312D]/5 rounded-[32px] hover:border-[#3A3F5F]/20 transition-all text-left shadow-sm">
-                                      <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-4 text-left">Official Comm Point</div>
+                                      <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-4 text-left">Contact Email</div>
                                       <div className="text-sm font-black text-[#32312D] truncate text-left">{viewingEmployer.user?.email || 'N/A'}</div>
                                   </div>
                                   {viewingEmployer.website && (
                                       <a href={viewingEmployer.website} target="_blank" className="block p-8 bg-[#E7E6E2]/30 border border-[#32312D]/5 rounded-[32px] hover:border-[#3A3F5F]/20 transition-all group text-left shadow-sm">
-                                          <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-4 group-hover:text-[#3A3F5F] text-left">Neural Link (Website)</div>
-                                          <div className="text-sm font-black text-[#32312D] truncate uppercase tracking-widest group-hover:underline underline-offset-8 text-left">Access Corporate Hub →</div>
+                                          <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mb-4 group-hover:text-[#3A3F5F] text-left">Website</div>
+                                          <div className="text-sm font-black text-[#32312D] truncate uppercase tracking-widest group-hover:underline underline-offset-8 text-left">Visit Website →</div>
                                       </a>
                                   )}
                               </div>
@@ -916,14 +919,14 @@ const AdminDashboard = () => {
                       </div>
 
                       <div className="mt-12 text-left">
-                          <div className="text-[10px] font-black text-[#3A3F5F] uppercase mb-8 tracking-[0.3em] border-b border-[#32312D]/5 pb-4 text-left">Targeted Nodes (Interests)</div>
+                          <div className="text-[10px] font-black text-[#3A3F5F] uppercase mb-8 tracking-[0.3em] border-b border-[#32312D]/5 pb-4 text-left">Interests</div>
                           {viewingEmployer.interests && viewingEmployer.interests.length > 0 ? (
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   {viewingEmployer.interests.map((interest: any) => (
                                       <div key={interest.id} className="p-6 bg-white rounded-[24px] border border-[#32312D]/10 flex flex-col gap-3 shadow-sm hover:border-[#3A3F5F]/30 transition-all text-left">
                                           <div className="flex justify-between items-start">
                                               <div>
-                                                  <div className="text-xs font-black text-[#32312D] uppercase tracking-tight">{interest.engineer?.fullName || 'Anonymous Node'}</div>
+                                                  <div className="text-xs font-black text-[#32312D] uppercase tracking-tight">{interest.engineer?.fullName || 'Anonymous Engineer'}</div>
                                                   <div className="text-[8px] font-black text-[#32312D]/40 uppercase tracking-widest mt-1">Status: {interest.status}</div>
                                               </div>
                                               <span className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest ${interest.type === 'LEASE' ? 'bg-[#3A3F5F]/5 text-[#3A3F5F]' : 'bg-[#E7E6E2] text-[#32312D]/60'}`}>
@@ -934,7 +937,7 @@ const AdminDashboard = () => {
                                   ))}
                               </div>
                           ) : (
-                              <div className="text-[#32312D]/30 text-xs font-black uppercase tracking-widest">No targets acquired yet.</div>
+                              <div className="text-[#32312D]/30 text-xs font-black uppercase tracking-widest">No interests yet.</div>
                           )}
                       </div>
 
@@ -943,7 +946,7 @@ const AdminDashboard = () => {
                             onClick={() => handleApproveEmployer(viewingEmployer.id, !viewingEmployer.isApproved)} 
                             className={`px-12 py-5 rounded-full font-black text-xs uppercase tracking-[0.3em] transition-all shadow-md ${viewingEmployer.isApproved ? 'bg-red-50 text-red-600 border border-red-100 hover:bg-red-500 hover:text-white' : 'bg-[#32312D] text-white hover:bg-[#3A3F5F]'}`}
                           >
-                              {viewingEmployer.isApproved ? 'Revoke Protocol' : 'Issue Credentials'}
+                              {viewingEmployer.isApproved ? 'Reject Business' : 'Approve Business'}
                           </button>
                       </div>
                   </div>
