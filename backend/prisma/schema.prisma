@@ -1,40 +1,35 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("postgresql://bridge_user:nTdh2I2uOQ1VAclNhTch82OCpMWk7Vk3@77.237.239.69:5432/talent_bridge?schema=public")
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  role      String   @default("EMPLOYER") // ADMIN, EMPLOYER, ENGINEER
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  adminProfile    AdminProfile?
-  employerProfile EmployerProfile?
-  engineerProfile EngineerProfile?
-  
+  id               String           @id @default(uuid())
+  email            String           @unique
+  password         String
+  role             String           @default("EMPLOYER")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
   activity_logs    Activity_log[]
-  sentMessages     Message[] @relation("SentMessages")
-  receivedMessages Message[] @relation("ReceivedMessages")
+  adminProfile     AdminProfile?
+  employerProfile  EmployerProfile?
+  engineerProfile  EngineerProfile?
+  receivedMessages Message[]        @relation("ReceivedMessages")
+  sentMessages     Message[]        @relation("SentMessages")
 }
 
 model Message {
   id         String   @id @default(uuid())
   senderId   String
-  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   receiverId String
-  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
   content    String
   createdAt  DateTime @default(now())
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 }
 
 model AdminProfile {
@@ -44,134 +39,130 @@ model AdminProfile {
 }
 
 model EmployerProfile {
-  id           String @id @default(uuid())
-  userId       String @unique
-  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyName  String?
-  website      String?
-  size         String?
-  industry     String?
-  description  String?
-  location     String?
+  id                String           @id @default(uuid())
+  userId            String           @unique
+  companyName       String?
+  website           String?
+  size              String?
+  industry          String?
+  description       String?
+  location          String?
+  isApproved        Boolean          @default(false)
   businessRegNumber String?
-  isApproved   Boolean @default(false)
   disapprovalReason String?
-
-  jobs         Job[]
-  contracts    Contract[]
-  interests    Interest[]
-  savedCandidates SavedCandidate[]
+  contracts         Contract[]
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interests         Interest[]
+  jobs              Job[]
+  savedCandidates   SavedCandidate[]
 }
 
 model EngineerProfile {
-  id                        String   @id @default(uuid())
-  userId                    String   @unique
-  user                      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fullName                  String?
-  profilePic                String?
-  country                   String?
-  skills                    String?   
-  yearsExperience           Int?     @default(0)
-  hourlyRate                Float?   @default(0)
-  monthlySalaryExpectation Float?   @default(0)
-  portfolioWebsite          String?
-  github                    String?
-  linkedin                  String?
-  videoUrl                  String?
-  aiSpecializations         String?   
-  languages                 String?   
-  availabilityStatus        String   @default("Available")
-  resumeUrl                 String?
-  certifications            String?
-  isProfileComplete         Boolean  @default(false)
-  isActive                  Boolean  @default(true)
-  isApproved                Boolean  @default(false)
-  approvalStatus            String   @default("PENDING") // PENDING, ACCEPTED_FOR_INTERVIEW, INTERVIEW_COMPLETED, FULLY_APPROVED, REJECTED
-  disapprovalReason         String?
-  isFeatured                Boolean  @default(false) // For curated "top talent" placement
-  meetingId                 String?
-  joinUrl                   String?
-
-  contracts                 Contract[]
-  interests                 Interest[]
-  savedBy                   SavedCandidate[]
-  endorsements              Endorsement[]
-  certificates              Certificate[]
+  id                       String           @id @default(uuid())
+  userId                   String           @unique
+  fullName                 String?
+  profilePic               String?
+  country                  String?
+  skills                   String?
+  yearsExperience          Int?             @default(0)
+  hourlyRate               Float?           @default(0)
+  monthlySalaryExpectation Float?           @default(0)
+  portfolioWebsite         String?
+  github                   String?
+  linkedin                 String?
+  videoUrl                 String?
+  aiSpecializations        String?
+  languages                String?
+  availabilityStatus       String           @default("Available")
+  resumeUrl                String?
+  isActive                 Boolean          @default(true)
+  isApproved               Boolean          @default(false)
+  approvalStatus           String           @default("PENDING")
+  isFeatured               Boolean          @default(false)
+  meetingId                String?
+  joinUrl                  String?
+  disapprovalReason        String?
+  isProfileComplete        Boolean          @default(false)
+  certifications           String?
+  certificates             Certificate[]
+  contracts                Contract[]
+  endorsements             Endorsement[]
+  user                     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interests                Interest[]
+  savedBy                  SavedCandidate[]
 }
 
 model Certificate {
-  id          String          @id @default(uuid())
-  engineerId  String
-  engineer    EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
-  url         String
-  name        String?
-  createdAt   DateTime        @default(now())
+  id         String          @id @default(uuid())
+  engineerId String
+  url        String
+  name       String?
+  createdAt  DateTime        @default(now())
+  engineer   EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
 }
 
 model SavedCandidate {
-  id         String   @id @default(uuid())
+  id         String          @id @default(uuid())
   employerId String
-  employer   EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
   engineerId String
+  createdAt  DateTime        @default(now())
+  employer   EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
   engineer   EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
 
   @@unique([employerId, engineerId])
 }
 
 model Job {
-  id          String    @id @default(uuid())
-  employerId  String
-  employer    EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  title       String
-  description String
-  requiredSkills String
-  maxBudget   Float
-  duration    String
-  status      String    @default("PENDING") // PENDING, OPEN, CLOSED, DRAFT, DISAPPROVED
+  id                String          @id @default(uuid())
+  employerId        String
+  title             String
+  description       String
+  requiredSkills    String
+  maxBudget         Float
+  duration          String
+  status            String          @default("PENDING")
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
   disapprovalReason String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  interests   Interest[]
+  interests         Interest[]
+  employer          EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
 }
 
 model Interest {
-  id          String    @id @default(uuid())
+  id          String          @id @default(uuid())
   jobId       String
-  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
   employerId  String
-  employer    EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
   engineerId  String
-  engineer    EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
-  type        String    @default("LEASE") // LEASE, FULLTIME
-  status      String    @default("PENDING") // PENDING, CALLED, APPROVED, REJECTED
+  type        String          @default("LEASE")
+  status      String          @default("PENDING")
   scheduledAt DateTime?
   meetingId   String?
   joinUrl     String?
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime        @default(now())
+  employer    EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  engineer    EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
+  job         Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@unique([jobId, engineerId])
 }
 
 model Contract {
-  id               String       @id @default(uuid())
-  employerId       String
-  employer         EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  engineerId       String
-  engineer         EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
-  type             String       @default("LEASE") // LEASE (Monthly), FULLTIME (6-month upfront)
-  startDate        DateTime     @default(now())
-  salary           Float        // Monthly salary or base
-  platformFee      Float        // Fee percentage or amount
-  paymentCycle     String       @default("MONTHLY")
-  status           String       @default("PENDING") // PENDING, ACTIVE, TERMINATED, COMPLETED
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-
-  tasks            Task[]
-  invoices         Invoice[]
-  timesheets       Timesheet[]
+  id           String          @id @default(uuid())
+  employerId   String
+  engineerId   String
+  type         String          @default("LEASE")
+  startDate    DateTime        @default(now())
+  salary       Float
+  platformFee  Float
+  paymentCycle String          @default("MONTHLY")
+  status       String          @default("PENDING")
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  employer     EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  engineer     EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
+  invoices     Invoice[]
+  tasks        Task[]
+  timesheets   Timesheet[]
 
   @@unique([employerId, engineerId])
 }
@@ -179,65 +170,64 @@ model Contract {
 model Timesheet {
   id          String   @id @default(uuid())
   contractId  String
-  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
   date        DateTime
   hours       Float
   description String?
-  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  status      String   @default("PENDING")
   createdAt   DateTime @default(now())
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
 }
 
 model Endorsement {
-  id          String   @id @default(uuid())
-  engineerId  String
-  engineer    EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
-  fromName    String   // Name of the person/company endorsing
-  content     String
-  createdAt   DateTime @default(now())
+  id         String          @id @default(uuid())
+  engineerId String
+  fromName   String
+  content    String
+  createdAt  DateTime        @default(now())
+  engineer   EngineerProfile @relation(fields: [engineerId], references: [id], onDelete: Cascade)
 }
 
 model Task {
   id          String    @id @default(uuid())
   contractId  String
-  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
   title       String
   description String
-  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH
+  priority    String    @default("MEDIUM")
   deadline    DateTime?
-  status      String    @default("PENDING") // PENDING, IN_PROGRESS, REVIEW, COMPLETED
+  status      String    @default("PENDING")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
 }
 
 model Invoice {
-  id          String    @id @default(uuid())
-  contractId  String
-  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  amount      Float
-  status      String    @default("UNPAID") // UNPAID, PAID, OVERDUE
-  dueDate     DateTime
-  createdAt   DateTime  @default(now())
-  
-  payment     Payment?
+  id         String   @id @default(uuid())
+  contractId String
+  amount     Float
+  status     String   @default("UNPAID")
+  dueDate    DateTime
+  createdAt  DateTime @default(now())
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  payment    Payment?
 }
 
 model Payment {
-  id          String    @id @default(uuid())
-  invoiceId   String    @unique
-  invoice     Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  amount      Float
-  status      String    @default("COMPLETED")
-  stripeId    String?
-  createdAt   DateTime  @default(now())
+  id        String   @id @default(uuid())
+  invoiceId String   @unique
+  amount    Float
+  status    String   @default("COMPLETED")
+  stripeId  String?
+  createdAt DateTime @default(now())
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }
 
 model Activity_log {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  action    String   // user login, job posted, engineer hired, contract signed, task updated, invoice generated, payment completed, interest shown
+  action    String
   details   String?
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SystemConfig {
@@ -246,4 +236,3 @@ model SystemConfig {
   value     String
   updatedAt DateTime @updatedAt
 }
-
