@@ -1,9 +1,13 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+// Ensure URL ends with /api
+const API_URL = rawApiUrl.endsWith('/api') ? rawApiUrl : 
+               (rawApiUrl.endsWith('/') ? `${rawApiUrl}api` : `${rawApiUrl}/api`);
 
 // Base server URL (without /api) for file serving
-const SERVER_URL = API_URL.replace('/api', '');
+const SERVER_URL = API_URL.replace(/\/api$/, '');
 
 const api = axios.create({
   baseURL: API_URL.endsWith('/') ? API_URL : `${API_URL}/`,

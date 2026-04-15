@@ -32,10 +32,9 @@ const allowedOrigins = [
   'http://127.0.0.1:3000',
   'https://meet.truecrm.online',
   'https://talent-bridge0.netlify.app',
+  'https://talent-bridge-frontend.pages.dev',
+  'https://talent-bridge-88g.pages.dev',
   'https://talentbridge.it.com',
-  'http://talentbridge.it.com',
-  'https://www.talentbridge.it.com',
-  'http://www.talentbridge.it.com',
 ].filter(Boolean) as string[];
 
 const corsOptions: CorsOptions = {
