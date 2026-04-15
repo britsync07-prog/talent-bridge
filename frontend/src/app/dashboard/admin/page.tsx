@@ -463,7 +463,7 @@ const AdminDashboard = () => {
                                                         <span className="px-4 py-2.5 bg-red-50 text-red-400 border border-red-100 rounded-xl font-black text-[10px] uppercase tracking-widest">Interview Rejected</span>
                                                     ) : interest.joinUrl ? (
                                                         <a 
-                                                            href={`https://leadhunter-crm.work.gd${interest.joinUrl}`} 
+                                                            href={`https://meet.truecrm.online${interest.joinUrl}`} 
                                                             target="_blank" 
                                                             rel="noopener noreferrer"
                                                             className="bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-sm flex items-center gap-2"
@@ -552,7 +552,7 @@ const AdminDashboard = () => {
                                             <td className="px-8 py-6 text-right flex justify-end gap-3">
                                                 {eng.joinUrl ? (
                                                     <a 
-                                                        href={`https://leadhunter-crm.work.gd${eng.joinUrl}`} 
+                                                        href={`https://meet.truecrm.online${eng.joinUrl}`} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
                                                         className="bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-sm flex items-center gap-2"

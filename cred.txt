@@ -1,5 +1,5 @@
 
-curl -X POST https://leadhunter-crm.work.gd:3001/api/meetings/create \
+curl -X POST https://meet.truecrm.online/api/meetings/create \
   -H "Content-Type: application/json" \
   -H "x-api-key: nexus_super_secret_key" \
   -d '{

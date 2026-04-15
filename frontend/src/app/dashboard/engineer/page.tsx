@@ -324,7 +324,7 @@ const EngineerDashboard = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <a href={`https://leadhunter-crm.work.gd${interview.joinUrl}`} target="_blank" className="bg-emerald-500 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-md">Join Call</a>
+                                            <a href={`https://meet.truecrm.online${interview.joinUrl}`} target="_blank" className="bg-emerald-500 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-md">Join Call</a>
                                         </div>
                                     ))}
                                 </div>

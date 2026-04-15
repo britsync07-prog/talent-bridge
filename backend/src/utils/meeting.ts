@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_KEY = process.env.LEADHUNTER_API_KEY || 'nexus_super_secret_key';
-const BASE_URL = process.env.LEADHUNTER_API_BASE_URL || 'http://leadhunter-crm.work.gd:3001';
+const BASE_URL = process.env.LEADHUNTER_API_BASE_URL || 'https://meet.truecrm.online';
 
 export interface MeetingResponse {
   meeting_id: string;
