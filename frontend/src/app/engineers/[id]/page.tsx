@@ -1,5 +1,7 @@
 'use client';
 
+export const runtime = 'edge';
+
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import api, { getFileUrl } from '@/lib/api';
