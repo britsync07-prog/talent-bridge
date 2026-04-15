@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "preview": "npm run pages:build && npx wrangler pages dev .vercel/output/static"
   },
   "dependencies": {
     "axios": "^1.13.6",
@@ -16,6 +18,7 @@
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.11.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -23,6 +26,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^3.50.0"
   }
 }
