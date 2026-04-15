@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createLeadHunterMeeting = void 0;
 const axios_1 = __importDefault(require("axios"));
 const API_KEY = process.env.LEADHUNTER_API_KEY || 'nexus_super_secret_key';
-const BASE_URL = process.env.LEADHUNTER_API_BASE_URL || 'http://leadhunter-crm.work.gd:3001';
+const BASE_URL = process.env.LEADHUNTER_API_BASE_URL || 'https://meet.truecrm.online';
 const createLeadHunterMeeting = async (title, startTime) => {
     try {
         const response = await axios_1.default.post(`${BASE_URL}/api/meetings/create`, {

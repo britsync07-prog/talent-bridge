@@ -10,3 +10,5 @@ export declare const getEngineerStats: (req: AuthRequest, res: Response) => Prom
 export declare const getSuggestedJobs: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export declare const getTimesheets: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export declare const getEndorsements: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getEngineerInterviews: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getMyEmployers: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;

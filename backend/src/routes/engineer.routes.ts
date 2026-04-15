@@ -9,7 +9,9 @@ import {
   getSuggestedJobs,
   getTimesheets,
   getEndorsements,
-  deleteCertificate
+  deleteCertificate,
+  getEngineerInterviews,
+  getMyEmployers
 } from '../controllers/engineer.controller';
 import { protect, engineer, optionalProtect } from '../middleware/auth.middleware';
 import { upload } from '../utils/multer';

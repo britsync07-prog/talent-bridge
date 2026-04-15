@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEndorsements = exports.getTimesheets = exports.getSuggestedJobs = exports.getEngineerStats = exports.getEngineerById = exports.getEngineers = exports.matchEngineers = exports.deleteCertificate = exports.updateProfile = exports.getProfile = void 0;
+exports.getMyEmployers = exports.getEngineerInterviews = exports.getEndorsements = exports.getTimesheets = exports.getSuggestedJobs = exports.getEngineerStats = exports.getEngineerById = exports.getEngineers = exports.matchEngineers = exports.deleteCertificate = exports.updateProfile = exports.getProfile = void 0;
 const prisma_1 = __importDefault(require("../lib/prisma"));
 const r2_1 = require("../utils/r2");
 const getProfile = async (req, res) => {
@@ -23,7 +23,20 @@ const getProfile = async (req, res) => {
         if (!engineer) {
             return res.status(404).json({ message: 'Engineer profile not found' });
         }
-        res.json(engineer);
+        // Anonymize employer info for the engineer
+        const anonymizedInterests = engineer.interests.map(interest => ({
+            ...interest,
+            employer: {
+                ...interest.employer,
+                companyName: `Opportunity #${interest.employerId.slice(0, 4)}`,
+                website: null,
+                description: 'Identity concealed until formal engagement.'
+            }
+        }));
+        res.json({
+            ...engineer,
+            interests: anonymizedInterests
+        });
     }
     catch (error) {
         res.status(500).json({ message: error.message });
@@ -177,6 +190,7 @@ const matchEngineers = async (req, res) => {
             };
             return {
                 ...safeEngineer,
+                fullName: isAdmin ? engineer.fullName : `Elite Operator #${engineer.id.slice(0, 4)}`,
                 matchScore: score,
                 matchedSkills,
                 matchPercentage: Math.min(100, Math.max(0, (score / 50) * 100)) // Arbitrary 50 max base score for percentage
@@ -232,7 +246,11 @@ const getEngineers = async (req, res) => {
                 { yearsExperience: 'desc' }
             ]
         });
-        res.json(engineers);
+        const processedEngineers = engineers.map(eng => ({
+            ...eng,
+            fullName: isAdmin ? eng.fullName : `Elite Operator #${eng.id.slice(0, 4)}`
+        }));
+        res.json(processedEngineers);
     }
     catch (error) {
         res.status(500).json({ message: error.message });
@@ -268,7 +286,11 @@ const getEngineerById = async (req, res) => {
             isFeatured: engineer.isFeatured,
             // specifically excluding github, linkedin, portfolioWebsite, resumeUrl, certifications, email
         };
-        res.json(safeEngineer);
+        const data = isAdmin ? safeEngineer : {
+            ...safeEngineer,
+            fullName: `Elite Operator #${engineer.id.slice(0, 4)}`
+        };
+        res.json(data);
     }
     catch (error) {
         res.status(500).json({ message: error.message });
@@ -361,3 +383,59 @@ const getEndorsements = async (req, res) => {
     }
 };
 exports.getEndorsements = getEndorsements;
+const getEngineerInterviews = async (req, res) => {
+    try {
+        const engineer = await prisma_1.default.engineerProfile.findUnique({
+            where: { userId: req.user.id }
+        });
+        if (!engineer)
+            return res.status(404).json({ message: 'Engineer not found' });
+        const interviews = await prisma_1.default.interest.findMany({
+            where: {
+                engineerId: engineer.id,
+                status: 'CALLED',
+                scheduledAt: { gte: new Date() }
+            },
+            include: { employer: true, job: true },
+            orderBy: { scheduledAt: 'asc' }
+        });
+        // Redact employer info
+        const safeInterviews = interviews.map(i => ({
+            ...i,
+            employer: i.employer ? { id: i.employer.id, companyName: 'Verified Client' } : null
+        }));
+        res.json(safeInterviews);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.getEngineerInterviews = getEngineerInterviews;
+const getMyEmployers = async (req, res) => {
+    try {
+        const engineer = await prisma_1.default.engineerProfile.findUnique({
+            where: { userId: req.user.id }
+        });
+        if (!engineer)
+            return res.status(404).json({ message: 'Engineer not found' });
+        const contracts = await prisma_1.default.contract.findMany({
+            where: { engineerId: engineer.id },
+            include: { employer: true }
+        });
+        const employers = contracts
+            .map(c => c.employer)
+            .filter((e, index, self) => e && self.findIndex(se => se?.id === e.id) === index);
+        // Redact sensitive info
+        const safeEmployers = employers.map(e => ({
+            id: e?.id,
+            companyName: 'Verified Client',
+            industry: e?.industry,
+            location: e?.location
+        }));
+        res.json(safeEmployers);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.getMyEmployers = getMyEmployers;

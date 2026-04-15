@@ -68,7 +68,7 @@ const registerEmployer = async (req, res) => {
 exports.registerEmployer = registerEmployer;
 const registerEngineer = async (req, res) => {
     try {
-        const { email, password, fullName, country, skills, yearsExperience, hourlyRate, monthlySalaryExpectation, aiSpecializations, languages, portfolioWebsite, github, linkedin, resumeUrl, certifications } = req.body;
+        const { email, password, fullName, country, skills, yearsExperience, hourlyRate, monthlySalaryExpectation, aiSpecializations, languages, portfolioWebsite, github, linkedin, resumeUrl } = req.body;
         if (!email || !password) {
             return res.status(400).json({ message: 'Please provide both email and password' });
         }

@@ -107,7 +107,11 @@ const getSavedCandidates = async (req, res) => {
         const isAdmin = req.user?.role === 'ADMIN';
         res.json(saved.map(s => {
             const { hourlyRate, monthlySalaryExpectation, ...rest } = s.engineer;
-            return isAdmin ? s.engineer : rest;
+            const data = isAdmin ? s.engineer : rest;
+            return {
+                ...data,
+                fullName: isAdmin ? s.engineer.fullName : `Elite Operator #${s.engineer.id.slice(0, 4)}`
+            };
         }));
     }
     catch (error) {
@@ -134,9 +138,13 @@ const getUpcomingInterviews = async (req, res) => {
         const isAdmin = req.user?.role === 'ADMIN';
         res.json(interviews.map(i => {
             const { hourlyRate, monthlySalaryExpectation, ...rest } = i.engineer;
+            const data = isAdmin ? i.engineer : rest;
             return {
                 ...i,
-                engineer: isAdmin ? i.engineer : rest
+                engineer: {
+                    ...data,
+                    fullName: isAdmin ? i.engineer.fullName : `Elite Operator #${i.engineer.id.slice(0, 4)}`
+                }
             };
         }));
     }

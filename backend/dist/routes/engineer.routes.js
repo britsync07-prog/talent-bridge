@@ -10,6 +10,8 @@ router.get('/stats', auth_middleware_1.protect, auth_middleware_1.engineer, engi
 router.get('/suggested-jobs', auth_middleware_1.protect, auth_middleware_1.engineer, engineer_controller_1.getSuggestedJobs);
 router.get('/timesheets', auth_middleware_1.protect, auth_middleware_1.engineer, engineer_controller_1.getTimesheets);
 router.get('/endorsements', auth_middleware_1.protect, auth_middleware_1.engineer, engineer_controller_1.getEndorsements);
+router.get('/interviews', auth_middleware_1.protect, auth_middleware_1.engineer, engineer_controller_1.getEngineerInterviews);
+router.get('/my-employers', auth_middleware_1.protect, auth_middleware_1.engineer, engineer_controller_1.getMyEmployers);
 router.patch('/profile', auth_middleware_1.protect, auth_middleware_1.engineer, multer_1.upload.fields([
     { name: 'resume', maxCount: 1 },
     { name: 'video', maxCount: 1 },

@@ -99,7 +99,11 @@ const getAllEngineers = async (req, res) => {
                 }
             }
         });
-        res.json(engineers);
+        const processedEngineers = engineers.map(eng => ({
+            ...eng,
+            fullName: eng.fullName || 'Unnamed Engineer'
+        }));
+        res.json(processedEngineers);
     }
     catch (error) {
         res.status(500).json({ message: error.message });
@@ -184,7 +188,11 @@ const getAllEmployers = async (req, res) => {
                 }
             }
         });
-        res.json(employers);
+        const processedEmployers = employers.map(emp => ({
+            ...emp,
+            companyName: emp.companyName || 'Unnamed Employer'
+        }));
+        res.json(processedEmployers);
     }
     catch (error) {
         res.status(500).json({ message: error.message });
@@ -276,7 +284,12 @@ const getAllInterests = async (req, res) => {
             },
             orderBy: { createdAt: 'desc' }
         });
-        res.json(interests);
+        const processedInterests = interests.map(interest => ({
+            ...interest,
+            engineer: interest.engineer ? { ...interest.engineer, fullName: interest.engineer.fullName || 'Unnamed Engineer' } : null,
+            employer: interest.employer ? { ...interest.employer, companyName: interest.employer.companyName || 'Unnamed Employer' } : null
+        }));
+        res.json(processedInterests);
     }
     catch (error) {
         res.status(500).json({ message: error.message });
