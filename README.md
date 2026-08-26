@@ -1,4 +1,10 @@
-﻿# TalentBridge
+# TalentBridge
+<div align="center">
+
+![License](https://img.shields.io/github/license/britsync07-prog/talent-bridge?style=flat-square&label=license&color=06b6d4) ![Language](https://img.shields.io/github/languages/top/britsync07-prog/talent-bridge?style=flat-square&color=0ea5e9) ![Stars](https://img.shields.io/github/stars/britsync07-prog/talent-bridge?style=flat-square&color=f59e0b) ![Last commit](https://img.shields.io/github/last-commit/britsync07-prog/talent-bridge?style=flat-square&color=22c55e) ![Repo size](https://img.shields.io/github/repo-size/britsync07-prog/talent-bridge?style=flat-square&color=94a3b8)
+
+</div>
+
 > A remote AI-workforce marketplace connecting employers with vetted engineers — jobs, contracts, timesheets, messaging, and payments in one platform.
 
 TalentBridge is a two-sided job and talent platform for hiring remote AI engineers. Employers post jobs and contracts, engineers showcase profiles with certificates and endorsements, and the platform manages the full engagement lifecycle: interests, contracts, timesheets, tasks, invoices, and Stripe-backed payments. A TypeScript/Express backend built on Prisma exposes a REST API plus Socket.IO real-time messaging, while a Next.js App Router frontend ships to Cloudflare Pages with dedicated admin, employer, and engineer dashboards.
