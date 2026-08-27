@@ -172,3 +172,8 @@ No docker-compose ships in this repository; the backend targets managed platform
 
 ## License
 MIT License — Copyright (c) 2026 Musfiqur Rahman Saimon. See [LICENSE](./LICENSE).
+
+
+---
+Keywords: talent marketplace, nextjs, prisma, stripe, realtime chat, remote jobs
+
